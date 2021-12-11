@@ -101,7 +101,7 @@ class Button {
 	}
 
 	_updateTitle() {
-		StreamDeck.setTitle(this.context, this[this.type], StreamDeck.BOTH)
+		// StreamDeck.setTitle(this.context, this[this.type], StreamDeck.BOTH)
 	}
 
 	setPreview() {

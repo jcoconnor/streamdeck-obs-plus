@@ -187,6 +187,7 @@ function handleStreamDeckMessages(e) {
 			break
 		case 'keyDown':
 			printConnectionState()
+			console.log("=================================================")
 			console.log("Received Key Down", data)
 			if (connectionState == ConnectionState.AUTHENTICATED) {
 				buttons[data.context].keyDown()
@@ -204,6 +205,7 @@ function handleStreamDeckMessages(e) {
 			break
 		case 'keyUp':
 			printConnectionState()
+			console.log("=================================================")
 			console.log("Received Key Up", data)
 			// Need button repaint to pick up prime changes.
 			// But this is too enthusiastic.
@@ -344,9 +346,9 @@ function updatePreviewButtons() {
 }
 
 function updateButtons() {
-	clearPreviewButtons()
+	// clearPreviewButtons()
 	if (OBS.preview != OBS.program) updatePreviewButtons()
-	clearProgramButtons()
+	// clearProgramButtons()
 	updateProgramButtons()
 }
 
