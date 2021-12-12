@@ -76,7 +76,7 @@ obs.on('ConnectionClosed', () => {
 	OBS.sources = []
 	clearPreviewButtons()
 	clearProgramButtons()
-	setButtonsOffline()
+	//setButtonsOffline()
 })
 obs.on('AuthenticationSuccess', () => {
 	connectionState = ConnectionState.AUTHENTICATED
@@ -86,7 +86,7 @@ obs.on('AuthenticationSuccess', () => {
 	obsUpdateSources()
 	updateCameraSettings()
 	updateButtons()
-	setButtonsOnline()
+	//setButtonsOnline()
 })
 obs.on('AuthenticationFailure', () => {
 	connectionState = ConnectionState.FAILED
@@ -345,11 +345,28 @@ function updatePreviewButtons() {
 	})
 }
 
+function clearRestOfButtons () {
+	programButtons = findButtonsByScene(OBS.program)
+	previewButtons = findButtonsByScene(OBS.preview)
+	console.log("Clear Rest of Buttons", programButtons, previewButtons)
+	Object.keys(buttons).forEach((b) => {
+		if (programButtons.includes(b)) {
+			console.log("Ignoring program button", b)
+		} else if (previewButtons.includes(b)) {
+			console.log("Ignoring preview button", b)
+		} else {
+			buttons[b].setOffAir()
+		}
+	})
+
+}
+
 function updateButtons() {
 	// clearPreviewButtons()
 	if (OBS.preview != OBS.program) updatePreviewButtons()
 	// clearProgramButtons()
 	updateProgramButtons()
+	clearRestOfButtons()
 }
 
 function updateButton(context) {
@@ -408,6 +425,19 @@ function findProgramButtons() {
 	})
 	return output
 }
+
+function findInactiveButtons () {
+	let output = []
+	Object.keys(buttons).forEach((b) => {
+		button_state = keyInactive
+		if (buttons[b].state) button_state = buttons[b].state
+		if (button_state == keyPreviewPrimed || button_state == keyPreviewNotPrimed || button_state == keySourcePreview) {
+			output.push(b)
+		}
+	})
+	return output
+}
+
 
 function clearPrimeButtons() {
 	console.log("Clearing Primed Buttons")
