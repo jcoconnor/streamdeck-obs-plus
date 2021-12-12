@@ -209,7 +209,7 @@ function handleStreamDeckMessages(e) {
 			console.log("Received Key Up", data)
 			// Need button repaint to pick up prime changes.
 			// But this is too enthusiastic.
-			if (buttons[data.context].primed == true && buttons[data.context].primed_send == true) updateButtons()
+			if (buttons[data.context].primed == true && buttons[data.context].primed_send == true) updateButtons(data.context)
 			buttons[data.context].primed_send = false
 			break;
 		case 'willAppear':
@@ -323,14 +323,14 @@ function clearPreviewButtons() {
 	})
 }
 
-function updateProgramButtons() {
+function updateProgramButtons(context) {
 	programButtons = findButtonsByScene(OBS.program)
 	// console.log("Updating Program Buttons", OBS, programButtons)
 	programButtons.forEach((b) => {
-		buttons[b].setProgram()
+		buttons[b].setProgram(context)
 	})
 	findButtonsBySource(OBS.program_sources).forEach((b) => {
-		if (!programButtons.includes(b)) buttons[b].setSourceProgram()
+		if (!programButtons.includes(b)) buttons[b].setSourceProgram(context)
 	})
 }
 
@@ -361,9 +361,9 @@ function clearRestOfButtons () {
 
 }
 
-function updateButtons() {
+function updateButtons(context) {
 	if (OBS.preview != OBS.program) updatePreviewButtons()
-	updateProgramButtons()
+	updateProgramButtons(context)
 	clearRestOfButtons()
 }
 

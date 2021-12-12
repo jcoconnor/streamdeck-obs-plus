@@ -15,6 +15,8 @@ class Button {
 		this.state = keyInactive
 		this.primed = false
 		this.primed_send = false
+		this.live_preset = 0
+		this.live_ipaddress = ""
 		this.processStreamDeckData(data)
 	}
 
@@ -59,7 +61,12 @@ class Button {
 						this._PreviewPrimed()
 						break
 					case keySourceLive:
-						StreamDeck.sendAlert(this.context)
+						if (this.live_preset == this.preset && this.live_ipaddress == this.ipaddress) {
+							// Allow switch to this scene since we are on the same camera preset.
+							this._LiveOutput()
+						} else {
+							StreamDeck.sendAlert(this.context)
+						}
 						break
 					case keyLiveOutput:
 						StreamDeck.sendAlert(this.context)
@@ -129,9 +136,13 @@ class Button {
 		}
 	}
 
-	setSourceProgram() {
+	setSourceProgram(context) {
 		if (this.type == 'scene') {
 			console.log("setSourceProgram", this)
+			if (context) {
+				this.live_ipaddress = buttons[context].ipaddress
+				this.live_preset = buttons[context].preset
+			}
 			this._setState(keySourceLive)
 			this.setOnline()
 		}
