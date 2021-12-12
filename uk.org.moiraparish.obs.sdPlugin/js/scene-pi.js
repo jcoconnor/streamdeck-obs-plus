@@ -164,7 +164,6 @@ function updateCameraSettingsIpAddress() {
 function updateButtonImage () {
 	console.log("updateButtonImage", currentButtonImage)
 	document.getElementById('buttonimage').value = ""
-	//document.querySelector('.sdpi-file-info[for="buttonimage"]').textContent = currentButtonImage
 }
 
 function updateCameraSettingsPreset() {
