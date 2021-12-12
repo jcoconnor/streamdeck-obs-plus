@@ -23,14 +23,8 @@ class Button {
 			console.log("Processing Streamdeck Payload ......", data.payload.state, data, OBS)
 			if (data.payload.settings.scene) this.scene = data.payload.settings.scene
 			if (data.payload.settings.source) this.source = data.payload.settings.source
-			if (data.payload.settings.buttonimage) {
-//				button_str = data.payload.settings.buttonimage
-				this.buttonimage = decodeURIComponent(data.payload.settings.buttonimage.replace(/^C:\\fakepath\\/, ''))
-				console.log("Picked up new button Image", this.buttonimage)
-			}
-			if (data.payload.settings.buttonimagecontents) {
-				this.buttonimagecontents = data.payload.settings.buttonimagecontents
-			}
+			if (data.payload.settings.buttonimage) this.buttonimage = decodeURIComponent(data.payload.settings.buttonimage.replace(/^C:\\fakepath\\/, ''))
+			if (data.payload.settings.buttonimagecontents) this.buttonimagecontents = data.payload.settings.buttonimagecontents
 			if (data.payload.settings.preset) this.preset = data.payload.settings.preset
 			if (data.payload.settings.ipaddress) this.ipaddress = data.payload.settings.ipaddress
 			if (data.payload.settings.lastpreset) this.lastpreset = data.payload.settings.lastpreset
@@ -247,17 +241,17 @@ class Button {
 	}
 
 	_setCameraPreset() {
-		// Camera Preset actions here.
-		console.log('Setting Camera Preset:', this.ipaddress, this.preset)
-
-		let camera_ptz_cmd = "http://" + this.ipaddress + "/cgi-bin/ptzctrl.cgi?ptzcmd&poscall&" + this.preset
-		console.log("Camera PTZ Command:", camera_ptz_cmd)
-
-		let Http = new XMLHttpRequest();
-		Http.open("GET", camera_ptz_cmd);
-		Http.send();
 		
-		// http://[Camera IP]/cgi-bin/ptzctrl.cgi?ptzcmd&poscall&[Position Number]
-	}
+		if (this.ipaddress != "" && this.present != "") {
+			// http://[Camera IP]/cgi-bin/ptzctrl.cgi?ptzcmd&poscall&[Position Number]
+			console.log('Setting Camera Preset:', this.ipaddress, this.preset)
 
+			let camera_ptz_cmd = "http://" + this.ipaddress + "/cgi-bin/ptzctrl.cgi?ptzcmd&poscall&" + this.preset
+			console.log("Camera PTZ Command:", camera_ptz_cmd)
+
+			let Http = new XMLHttpRequest();
+			Http.open("GET", camera_ptz_cmd);
+			Http.send();
+		}
+	}
 }

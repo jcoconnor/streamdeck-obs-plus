@@ -330,7 +330,7 @@ function updateProgramButtons() {
 		buttons[b].setProgram()
 	})
 	findButtonsBySource(OBS.program_sources).forEach((b) => {
-		if (!programButtons.includes(b, 0)) buttons[b].setSourceProgram()
+		if (!programButtons.includes(b)) buttons[b].setSourceProgram()
 	})
 }
 
@@ -341,19 +341,19 @@ function updatePreviewButtons() {
 		buttons[b].setPreview()
 	})
 	findButtonsBySource(OBS.preview_sources).forEach(b => {
-		if (!previewButtons.includes(b, 0))  buttons[b].setSourcePreview()
+		if (!previewButtons.includes(b))  buttons[b].setSourcePreview()
 	})
 }
 
 function clearRestOfButtons () {
-	programButtons = findButtonsByScene(OBS.program)
-	previewButtons = findButtonsByScene(OBS.preview)
+	programButtons = findButtonsByScene(OBS.program, OBS.program_sources)
+	previewButtons = findButtonsByScene(OBS.preview, OBS.preview_sources)
 	console.log("Clear Rest of Buttons", programButtons, previewButtons)
 	Object.keys(buttons).forEach((b) => {
 		if (programButtons.includes(b)) {
-			console.log("Ignoring program button", b)
+			// console.log("Ignoring program button", b)
 		} else if (previewButtons.includes(b)) {
-			console.log("Ignoring preview button", b)
+			// console.log("Ignoring preview button", b)
 		} else {
 			buttons[b].setOffAir()
 		}
@@ -362,9 +362,7 @@ function clearRestOfButtons () {
 }
 
 function updateButtons() {
-	// clearPreviewButtons()
 	if (OBS.preview != OBS.program) updatePreviewButtons()
-	// clearProgramButtons()
 	updateProgramButtons()
 	clearRestOfButtons()
 }
@@ -380,10 +378,12 @@ function updateButton(context) {
 	}
 }
 
-function findButtonsByScene(scene) {
+function findButtonsByScene(scene, source_list) {
 	let output = []
 	Object.keys(buttons).forEach((b) => {
 		if (buttons[b].scene && buttons[b].scene == scene) {
+			output.push(b)
+		} else if (source_list && source_list.includes(buttons[b].source)) {
 			output.push(b)
 		}
 	})
