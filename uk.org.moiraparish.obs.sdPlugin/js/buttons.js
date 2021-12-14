@@ -63,6 +63,10 @@ class Button {
 					case keySourceLive:
 						if (this.live_preset == this.preset && this.live_ipaddress == this.ipaddress) {
 							// Allow switch to this scene since we are on the same camera preset.
+							console.log("Transitioning this scene to live as same preset")
+							obs.send('SetPreviewScene', {
+								'scene-name': this.scene
+							})
 							this._LiveOutput()
 						} else {
 							StreamDeck.sendAlert(this.context)
@@ -79,7 +83,7 @@ class Button {
 		if (OBS.scenes.includes(this.scene)) {
 			if (this.scene != OBS.preview) {
 				console.log("Setting Scene to: ", this.scene)
-				obs.send(OBS.studioMode ? 'SetPreviewScene' : 'SetCurrentScene', {
+				obs.send('SetPreviewScene', {
 					'scene-name': this.scene
 				})
 			} else {
@@ -98,6 +102,8 @@ class Button {
 	_LiveOutput() {
 		console.log("Starting Scene transition to program")
 		obs.send('TransitionToProgram')
+		this.live_ipaddress = this.ipaddress
+		this.live_preset = this.preset
 		this._setState(keySourceLive)
 	}
 
@@ -119,11 +125,15 @@ class Button {
 		}
 	}
 
-	setProgram() {
+	setProgram(context) {
 		if (this.type == 'scene' ) {
 			console.log("setProgram", this)
 			this._setState(keyLiveOutput)
 			this.setOnline()
+			if (context) {
+				this.live_ipaddress = buttons[context].ipaddress
+				this.live_preset = buttons[context].preset
+			}
 		}
 	}
 
