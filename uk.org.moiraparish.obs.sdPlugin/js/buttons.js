@@ -102,6 +102,8 @@ class Button {
 	_LiveOutput() {
 		console.log("Starting Scene transition to program")
 		obs.send('TransitionToProgram')
+		this.primed = true
+		this.primed_send = true
 		this.live_ipaddress = this.ipaddress
 		this.live_preset = this.preset
 		this._setState(keySourceLive)
