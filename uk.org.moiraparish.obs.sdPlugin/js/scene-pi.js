@@ -1,10 +1,6 @@
 let _currentPlugin
-let obsScenes
-let obsSources
 let currentScene
 let currentSource
-let currentPreset
-let currentIpAddress
 let currentButtonImage
 let currentButtonImageContents = []
 let currentContext
@@ -32,20 +28,16 @@ function connectElgatoStreamDeckSocket(port, uuid, registerEvent, info, action) 
 				currentContext = data.context
 				if (data.payload.settings) updateSettingsUI(data)
 				if (data.payload.scenes) {
-					obsScenes = data.payload.scenes
-					updateSceneUI()
+					updateSceneUI(data.payload.scenes)
 				}
 				if (data.payload.sources) {
-					obsSources = data.payload.sources
-					updateSourceUI()
+					updateSourceUI(data.payload.sources)
 				}
 				if (data.payload.preset) {
-					currentPreset = data.payload.preset
-					updateCameraSettingsPreset()
+					document.getElementById('preset').value = data.payload.preset
 				}
 				if (data.payload.ipaddress) {
-					currentIpAddress = data.payload.ipaddress
-					updateCameraSettingsIpAddress()
+					document.getElementById('ipaddress').value = data.payload.ipaddress
 				}
 				if (data.payload.buttonimage) {
 					console.log("Got something on buttonimage", currentButtonImage)
@@ -84,7 +76,7 @@ function updateGlobalSettings() {
 	StreamDeck.sendToPlugin(_currentPlugin.context, _currentPlugin.action, {updateGlobalSettings: true})
 }
 
-function updateSceneUI() {
+function updateSceneUI(obsScenes) {
 	console.log("Doing updateSceneUI")
 	document.getElementById('scenes').innerText = ''
 	createScene('')
@@ -100,7 +92,7 @@ function createScene(scene) {
 	document.getElementById('scenes').appendChild(option)
 }
 
-function updateSourceUI() {
+function updateSourceUI(obsSources) {
 	console.log("Doing updateSourceUI")
 	document.getElementById('sources').innerText = ''
 	createSource('')
@@ -137,8 +129,6 @@ function updateSettings() {
 	console.log("Finished updateSettings call - now reset currents")
 	currentScene = document.getElementById('scenes').value
 	currentSource = document.getElementById('sources').value
-	currentPreset = document.getElementById('preset').value
-	currentIpAddress = document.getElementById('ipaddress').value
 	currentButtonImage = decodeURIComponent(document.getElementById('buttonimage').value.replace(/^C:\\fakepath\\/, ''))
 	console.log("Finished updateSettings", currentButtonImage)
 }
@@ -156,19 +146,9 @@ function updateButtonSettings () {
 	})
 }
 
-function updateCameraSettingsIpAddress() {
-	console.log("Doing updateCameraSettingsIpAddress")
-	document.getElementById('ipaddress').value = currentIpAddress
-}
-
 function updateButtonImage () {
 	console.log("updateButtonImage", currentButtonImage)
 	document.getElementById('buttonimage').value = ""
-}
-
-function updateCameraSettingsPreset() {
-	console.log("Doing updateCameraSettingsPreset")
-	document.getElementById('preset').value = currentPreset
 }
 
 document.getElementById('host').onchange = updateGlobalSettings
