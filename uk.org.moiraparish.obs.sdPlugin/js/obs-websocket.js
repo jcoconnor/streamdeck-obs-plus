@@ -1,10 +1,9 @@
 /*!
- * OBS WebSocket Javascript API (obs-websocket-js) v4.0.1
+ * OBS WebSocket Javascript API (obs-websocket-js) v4.0.3
  * Author: Brendan Hagan (haganbmj)
  * License: MIT
- * Repository: https://github.com/haganbmj/obs-websocket-js
- * Build Timestamp: 2020-02-20 16:46:18+00:00
- * Built from Commit: https://github.com/haganbmj/obs-websocket-js/commit/ce3f98c979d2a06c678848e3cf75454bce7a04d9
+ * Repository: https://github.com/obs-websocket-community-projects/obs-websocket-js
+ * Build Timestamp: 2022-01-01T14:21:15.037Z
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -137,6 +136,10 @@ class OBSWebSocket extends Socket {
         rejectReason = Status.REQUEST_TYPE_NOT_SPECIFIED;
       }
 
+      if (args && (typeof args !== 'object' || args === null || Array.isArray(args))) {
+        rejectReason = Status.ARGS_NOT_OBJECT;
+      }
+
       if (!this._connected) {
         rejectReason = Status.NOT_CONNECTED;
       }
@@ -245,7 +248,7 @@ class Socket extends EventEmitter {
     // eslint-disable-next-line no-async-promise-executor
     return new Promise(async (resolve, reject) => {
       try {
-        await this._connect(address);
+        await this._connect(address, Boolean(args.secure));
         await this._authenticate(args.password);
         resolve();
       } catch (err) {
@@ -260,17 +263,18 @@ class Socket extends EventEmitter {
   /**
    * Opens a WebSocket connection to an obs-websocket server, but does not attempt any authentication.
    *
-   * @param {String} address url without ws:// prefix.
+   * @param {String} address url without ws:// or wss:// prefix.
+   * @param {Boolean} secure whether to us ws:// or wss://
    * @returns {Promise}
    * @private
    * @return {Promise} on attempted creation of WebSocket connection.
    */
-  async _connect(address) {
+  async _connect(address, secure) {
     return new Promise((resolve, reject) => {
       let settled = false;
 
-      debug('Attempting to connect to: %s', address);
-      this._socket = new WebSocket('ws://' + address);
+      debug('Attempting to connect to: %s (secure: %s)', address, secure);
+      this._socket = new WebSocket((secure ? 'wss://' : 'ws://') + address);
 
       // We only handle the initial connection error.
       // Beyond that, the consumer is responsible for adding their own generic `error` event listener.
@@ -3326,6 +3330,10 @@ module.exports = {
   REQUEST_TYPE_NOT_SPECIFIED: {
     status: 'error',
     description: 'A Request Type was not specified.'
+  },
+  ARGS_NOT_OBJECT: {
+    status: 'error',
+    description: 'The supplied argments parameter is not an object.'
   },
 
   init() {
