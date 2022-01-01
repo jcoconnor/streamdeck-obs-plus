@@ -1,5 +1,5 @@
-const canvas = document.getElementById('canvas')
-const ctx = canvas.getContext('2d')
+// const canvas = document.getElementById('canvas')
+// const ctx = canvas.getContext('2d')
 
 const max_rect_width = 144
 const rectangle_line_width = 10

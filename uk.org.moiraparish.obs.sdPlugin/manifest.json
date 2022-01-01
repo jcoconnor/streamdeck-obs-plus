@@ -4,7 +4,7 @@
 	"Description": "Moira Parish Streamdeck Plugins.",
 	"Author": "John O'Connor",
 	"URL": "https://github.com/jcoconnor/streamdeck-obs-plus",
-	"Version": "0.2.2",
+	"Version": "0.2.3",
 	"Icon": "icons/icon",
 	"CodePath": "plugin.html",
 
