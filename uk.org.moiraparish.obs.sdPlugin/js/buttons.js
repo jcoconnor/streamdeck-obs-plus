@@ -212,6 +212,9 @@ class Button {
 				break
 			case keySourceLive:
 				lower_bar = red
+				if (this.liveactive_preset) {
+					circle_col = blue
+				}
 				break
 			case keyLiveOutput:
 				main_box = red

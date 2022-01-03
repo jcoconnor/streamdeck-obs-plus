@@ -462,7 +462,9 @@ function setLiveActivePreset(live_preset, live_ipaddress, live_source) {
 		// Address match
 		if (buttons[b].preset == live_preset && buttons[b].ipaddress == live_ipaddress && buttons[b].source == live_source) {
 			buttons[b].liveactive_preset = true
+			console.log("livepreset - MATCH", buttons[b])
 		} else {
+			console.log("livepreset - no match button", buttons[b])
 			buttons[b].liveactive_preset = false
 		}
 	})
