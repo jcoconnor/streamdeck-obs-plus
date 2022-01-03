@@ -208,7 +208,6 @@ function handleStreamDeckMessages(e) {
 			console.log("=================================================")
 			console.log("Received Key Up", data)
 			// Need button repaint to pick up prime changes.
-			// But this is too enthusiastic.
 			if (buttons[data.context].primed == true && buttons[data.context].primed_send == true) updateButtons()
 			buttons[data.context].primed_send = false
 			break;
@@ -269,7 +268,7 @@ function handleGlobalSettingsUpdate(e) {
 
 
 function handleProgramSceneChanged(e) {
-	console.log("Just before Program Scene Change - OBS is", e)
+	console.log("handleProgramSceneChanged: Just before Program Scene Change - OBS is", e)
 	let _program = ''
 	if (e['scene-name']) _program = e['scene-name']
 	if (e['name']) _program = e['name']
@@ -289,7 +288,7 @@ function handleProgramSceneChanged(e) {
 }
 
 function handlePreviewSceneChanged(e) {
-	console.log("Just before Preview Scene Change - OBS is", OBS)
+	console.log("handlePreviewSceneChanged: Just before Preview Scene Change - OBS is", OBS)
 	let _preview = ''
 	if (e['scene-name']) _preview = e['scene-name']
 	if (e['name']) _preview = e['name']
@@ -325,7 +324,7 @@ function clearPreviewButtons() {
 
 function updateProgramButtons() {
 	programButtons = findButtonsByScene(OBS.program)
-	// console.log("Updating Program Buttons", OBS, programButtons)
+	console.log(">>>>>>>>>>>>>>>Updating Program Buttons", OBS, programButtons)
 	programButtons.forEach((b) => {
 		buttons[b].setProgram()
 	})
@@ -336,7 +335,7 @@ function updateProgramButtons() {
 
 function updatePreviewButtons() {
 	previewButtons = findButtonsByScene(OBS.preview)
-	// console.log("Updating Preview Buttons", OBS, previewButtons)
+	console.log(">>>>>>>>>>>>>>>>Updating Preview Buttons", OBS, previewButtons)
 	previewButtons.forEach(b => {
 		buttons[b].setPreview()
 	})
@@ -345,16 +344,18 @@ function updatePreviewButtons() {
 	})
 }
 
-function clearRestOfButtons () {
+function clearRestOfButtons() {
+	console.log(">>>>>>>>>>>>>>>clearRestOfButtons program:", OBS.program, "preview", OBS.preview)
 	programButtons = findButtonsByScene(OBS.program, OBS.program_sources)
 	previewButtons = findButtonsByScene(OBS.preview, OBS.preview_sources)
-	console.log("Clear Rest of Buttons", programButtons, previewButtons)
+	console.log("Clear Rest of Buttons", "Program Buttons", programButtons, "Preview Buttons", previewButtons)
 	Object.keys(buttons).forEach((b) => {
 		if (programButtons.includes(b)) {
-			// console.log("Ignoring program button", b)
+			console.log("Ignoring program button", b)
 		} else if (previewButtons.includes(b)) {
-			// console.log("Ignoring preview button", b)
+			console.log("Ignoring preview button", b)
 		} else {
+			console.log("setting button off air", b)
 			buttons[b].setOffAir()
 		}
 	})
@@ -362,9 +363,12 @@ function clearRestOfButtons () {
 }
 
 function updateButtons() {
-	if (OBS.preview != OBS.program) updatePreviewButtons()
+	console.log("Running updateButtons")
 	updateProgramButtons()
-	clearRestOfButtons()
+	if (OBS.preview != OBS.program) 	{
+		updatePreviewButtons()
+		clearRestOfButtons()
+	}
 }
 
 function updateButton(context) {
@@ -444,7 +448,8 @@ function clearPrimeButtons() {
 	Object.keys(buttons).forEach((b) => {
 		// Only work on this current preview scene to check.
 		if (buttons[b].scene == OBS.preview) {
-			buttons[b].primed = false
+			console.log("Clearing primed button", b, buttons[b].coordinates.column, buttons[b].coordinates.row, "button", buttons[b] )
+			buttons[b].clearPrimed()
 		}
 	})
 }

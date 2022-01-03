@@ -15,6 +15,7 @@ class Button {
 		this.type = type
 		this.state = keyInactive
 		this.primed = false
+		this.liveactive = false
 		this.primed_send = false
 		this.processStreamDeckData(data)
 	}
@@ -90,9 +91,16 @@ class Button {
 		}
 	}
 
+	clearPrimed() {
+		if (this.state == keyPreviewPrimed) this._setState(keyPreviewNotPrimed)
+		this.primed = false
+	}
+
 	_LiveOutput() {
 		console.log("Starting Scene transition to program")
+		this.liveactive = true // Indicates last live one pressed.
 		obs.send('TransitionToProgram')
+		clearPrimeButtons()
 		this._setState(keySourceLive)
 	}
 
@@ -109,7 +117,7 @@ class Button {
 			} else {
 				this._setState(keyPreviewNotPrimed)
 			}
-			
+			this.liveactive = false
 			this.setOnline()
 		}
 	}
@@ -143,6 +151,9 @@ class Button {
 		if (this.type == 'scene') {
 			console.log("Setting OFF AIR", this)
 			this._setState(keyInactive)
+			this.primed = false
+			this.send_primed = false
+			this.liveactive = false
 			this.setOffline()
 		}
 	}
@@ -199,7 +210,7 @@ class Button {
 				break
 			case keyLiveOutput:
 				main_box = red
-				if (this.primed) circle_col = red
+				if (this.liveactive) circle_col = red
 				break
 		}
 		console.log("***** SetOnline Scene:", this.scene, 
@@ -235,7 +246,7 @@ class Button {
 			ctx.lineTo(rectangle_width+rectangle_line_width, src_rectangle_y)
 			ctx.stroke()
 		}
-		console.log("Canvas output", canvas.toDataURL())
+		// console.log("Canvas output", canvas.toDataURL())
 		StreamDeck.setImage(this.context, canvas.toDataURL(), StreamDeck.BOTH)
 	}
 
@@ -246,7 +257,7 @@ class Button {
 		ctx.clearRect(0, 0, max_rect_width, max_rect_width);
 		if (this.buttonimagecontents) {
 			this._loadButtonImage(ctx, this.buttonimagecontents).then((values) => {
-				console.log("Canvas output", canvas.toDataURL())
+				// console.log("Canvas output", canvas.toDataURL())
 				StreamDeck.setImage(this.context, canvas.toDataURL(), StreamDeck.BOTH)
 			})
 		} else {
