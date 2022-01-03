@@ -453,6 +453,22 @@ function clearPrimeButtons() {
 	})
 }
 
+function setLiveActivePreset(live_preset, live_ipaddress, live_source) {
+	console.log(">>>>>setLiveActivePreset", live_preset, live_ipaddress, live_source)
+	Object.keys(buttons).forEach((b) => {
+		// Conditions
+		// Source match
+		// Presets match
+		// Address match
+		if (buttons[b].preset == live_preset && buttons[b].ipaddress == live_ipaddress && buttons[b].source == live_source) {
+			buttons[b].liveactive_preset = true
+		} else {
+			buttons[b].liveactive_preset = false
+		}
+	})
+
+}
+
 function setButtonsOffline() {
 	console.log("Setting Buttons Online -------------------------------------------------------------")
 	Object.values(buttons).forEach((b) => {

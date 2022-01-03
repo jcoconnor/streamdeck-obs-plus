@@ -15,8 +15,9 @@ class Button {
 		this.type = type
 		this.state = keyInactive
 		this.primed = false
-		this.liveactive = false
 		this.primed_send = false
+		this.liveactive = false
+		this.liveactive_preset = false
 		this.processStreamDeckData(data)
 	}
 
@@ -76,7 +77,7 @@ class Button {
 		if (OBS.scenes.includes(this.scene)) {
 			if (this.scene != OBS.preview) {
 				console.log("Setting Scene to: ", this.scene)
-				obs.send(OBS.studioMode ? 'SetPreviewScene' : 'SetCurrentScene', {
+				obs.send('SetPreviewScene', {
 					'scene-name': this.scene
 				})
 			} else {
@@ -101,8 +102,10 @@ class Button {
 		StreamDeck.sendOk(this.context)
 		console.log("Starting Scene transition to program")
 		this.liveactive = true // Indicates last live one pressed.
+		this.liveactive_preset = true
 		obs.send('TransitionToProgram')
 		clearPrimeButtons()
+		setLiveActivePreset(this.preset, this.ipaddress, this.source)
 		this._setState(keySourceLive)
 	}
 
@@ -212,7 +215,11 @@ class Button {
 				break
 			case keyLiveOutput:
 				main_box = red
-				if (this.liveactive) circle_col = red
+				if (this.liveactive) {
+					circle_col = red
+				} else if (this.liveactive_preset) {
+					circle_col = blue
+				}
 				break
 		}
 		console.log("***** SetOnline Scene:", this.scene, 
