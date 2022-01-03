@@ -72,6 +72,7 @@ class Button {
 	}
 
 	_PreviewPrimed() {
+		StreamDeck.sendOk(this.context)
 		if (OBS.scenes.includes(this.scene)) {
 			if (this.scene != OBS.preview) {
 				console.log("Setting Scene to: ", this.scene)
@@ -97,6 +98,7 @@ class Button {
 	}
 
 	_LiveOutput() {
+		StreamDeck.sendOk(this.context)
 		console.log("Starting Scene transition to program")
 		this.liveactive = true // Indicates last live one pressed.
 		obs.send('TransitionToProgram')
