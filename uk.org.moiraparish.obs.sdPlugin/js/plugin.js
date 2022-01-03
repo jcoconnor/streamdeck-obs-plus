@@ -363,12 +363,11 @@ function clearRestOfButtons() {
 }
 
 function updateButtons() {
-	console.log("Running updateButtons")
+	console.log("..........Running updateButtons")
+	if (OBS.preview != OBS.program) updatePreviewButtons()
 	updateProgramButtons()
-	if (OBS.preview != OBS.program) 	{
-		updatePreviewButtons()
-		clearRestOfButtons()
-	}
+	if (OBS.preview != OBS.program) clearRestOfButtons()
+
 }
 
 function updateButton(context) {
