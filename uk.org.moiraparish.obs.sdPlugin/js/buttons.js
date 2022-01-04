@@ -64,14 +64,14 @@ class Button {
 						break
 					case keySourceLive:
 						if (this.liveactive_preset && !this.liveactive) {
-
+							this._LiveOutput()
 						} else {
 							StreamDeck.sendAlert(this.context)
 						}
 						break
 					case keyLiveOutput:
 						if (this.liveactive_preset && !this.liveactive) {
-
+							this._LiveOutput()
 						} else {
 							StreamDeck.sendAlert(this.context)
 						}
@@ -108,7 +108,14 @@ class Button {
 
 	_LiveOutput() {
 		StreamDeck.sendOk(this.context)
-		console.log("Starting Scene transition to program")
+		if (this.liveactive_preset && !this.liveactive) {
+			console.log("Live Output Scene switch: ", this.scene)
+			obs.send('SetCurrentScene', {
+				'scene-name': this.scene
+			})
+		} else {
+			console.log("Starting Scene transition to program")
+		}
 		this.liveactive = true // Indicates last live one pressed.
 		this.liveactive_preset = true
 		obs.send('TransitionToProgram')
