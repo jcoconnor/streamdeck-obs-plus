@@ -120,7 +120,7 @@ class Button {
 		this.liveactive_preset = true
 		obs.send('TransitionToProgram')
 		clearPrimeButtons()
-		setLiveActivePresets(this.preset, this.ipaddress, this.source)
+		setLiveActivePresets(this.preset, this.ipaddress, this.source, this.context)
 		this._setState(keySourceLive)
 	}
 
@@ -179,14 +179,15 @@ class Button {
 		}
 	}
 
-	setLiveActivePreset(live_preset, live_ipaddress, live_source) {
+	setLiveActivePreset(live_preset, live_ipaddress, live_source, live_context) {
 		// Conditions
 		// Source match
 		// Presets match
 		// Address match
 		if (this.preset == live_preset && this.ipaddress == live_ipaddress && this.source == live_source) {
 			this.liveactive_preset = true
-			console.log("livepreset - coords", this.coordinates.column, this.coordinates.row, "MATCH", this)
+			this.liveactive = (live_context == this.context ? true : false)
+			console.log("livepreset - coords", this.coordinates.column, this.coordinates.row, "MATCH", "live_context", live_context, "button", this)
 		} else {
 			console.log("livepreset - coords", this.coordinates.column, this.coordinates.row, "no match ", this)
 			this.liveactive_preset = false
