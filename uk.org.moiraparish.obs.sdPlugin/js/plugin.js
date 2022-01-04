@@ -366,6 +366,7 @@ function updateButtons() {
 	console.log("..........Running updateButtons")
 	if (OBS.preview != OBS.program) updatePreviewButtons()
 	updateProgramButtons()
+	// Only do this if we have separate preview/live to avoid buttons getting clobbered.
 	if (OBS.preview != OBS.program) clearRestOfButtons()
 
 }
@@ -453,22 +454,11 @@ function clearPrimeButtons() {
 	})
 }
 
-function setLiveActivePreset(live_preset, live_ipaddress, live_source) {
+function setLiveActivePresets(live_preset, live_ipaddress, live_source) {
 	console.log(">>>>>setLiveActivePreset", live_preset, live_ipaddress, live_source)
 	Object.keys(buttons).forEach((b) => {
-		// Conditions
-		// Source match
-		// Presets match
-		// Address match
-		if (buttons[b].preset == live_preset && buttons[b].ipaddress == live_ipaddress && buttons[b].source == live_source) {
-			buttons[b].liveactive_preset = true
-			console.log("livepreset - MATCH", buttons[b])
-		} else {
-			console.log("livepreset - no match button", buttons[b])
-			buttons[b].liveactive_preset = false
-		}
+		b.setLiveActivePreset(live_preset, live_ipaddress, live_source)
 	})
-
 }
 
 function setButtonsOffline() {
