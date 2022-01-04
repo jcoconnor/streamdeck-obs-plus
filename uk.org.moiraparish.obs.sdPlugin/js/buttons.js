@@ -63,10 +63,18 @@ class Button {
 						this._PreviewPrimed()
 						break
 					case keySourceLive:
-						StreamDeck.sendAlert(this.context)
+						if (this.liveactive_preset && !this.liveactive) {
+
+						} else {
+							StreamDeck.sendAlert(this.context)
+						}
 						break
 					case keyLiveOutput:
-						StreamDeck.sendAlert(this.context)
+						if (this.liveactive_preset && !this.liveactive) {
+
+						} else {
+							StreamDeck.sendAlert(this.context)
+						}
 						break
 				}
 		}
@@ -105,7 +113,7 @@ class Button {
 		this.liveactive_preset = true
 		obs.send('TransitionToProgram')
 		clearPrimeButtons()
-		setLiveActivePreset(this.preset, this.ipaddress, this.source)
+		setLiveActivePresets(this.preset, this.ipaddress, this.source)
 		this._setState(keySourceLive)
 	}
 
@@ -159,8 +167,24 @@ class Button {
 			this.primed = false
 			this.send_primed = false
 			this.liveactive = false
+			this.liveactive_preset = false
 			this.setOffline()
 		}
+	}
+
+	setLiveActivePreset(live_preset, live_ipaddress, live_source) {
+		// Conditions
+		// Source match
+		// Presets match
+		// Address match
+		if (this.preset == live_preset && this.ipaddress == live_ipaddress && this.source == live_source) {
+			this.liveactive_preset = true
+			console.log("livepreset - coords", this.coordinates.column, this.coordinates.row, "MATCH", this)
+		} else {
+			console.log("livepreset - coords", this.coordinates.column, this.coordinates.row, "no match ", this)
+			this.liveactive_preset = false
+		}
+
 	}
 
 	_setState(newstate) {
