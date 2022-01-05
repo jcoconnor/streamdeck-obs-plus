@@ -447,7 +447,7 @@ function clearPrimeButtons() {
 	console.log("Clearing Primed Buttons")
 	Object.keys(buttons).forEach((b) => {
 		// Only work on this current preview scene to check.
-		if (buttons[b].scene == OBS.preview) {
+		if (buttons[b].scene == OBS.preview && !buttons[b].liveactive) {
 			console.log("Clearing primed button", b, buttons[b].coordinates.column, buttons[b].coordinates.row, "button", buttons[b] )
 			buttons[b].clearPrimed()
 		}
