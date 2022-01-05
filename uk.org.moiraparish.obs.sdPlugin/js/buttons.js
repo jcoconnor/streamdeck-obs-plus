@@ -113,13 +113,16 @@ class Button {
 			obs.send('SetCurrentScene', {
 				'scene-name': this.scene
 			})
+			console.log("Checking button state", this)
 		} else {
 			console.log("Starting Scene transition to program")
+			obs.send('TransitionToProgram')
 		}
 		this.liveactive = true // Indicates last live one pressed.
 		this.liveactive_preset = true
-		obs.send('TransitionToProgram')
+		console.log("Checking button state", this)
 		clearPrimeButtons()
+		console.log("Checking button state", this)
 		setLiveActivePresets(this.preset, this.ipaddress, this.source, this.context)
 		this._setState(keySourceLive)
 	}
