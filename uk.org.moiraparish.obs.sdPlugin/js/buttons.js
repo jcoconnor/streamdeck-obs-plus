@@ -248,7 +248,7 @@ class Button {
 			case keySourceLive:
 				lower_bar = red
 				if (this.liveactive_preset) {
-					circle_col = blue
+					circle_col = yellow
 				}
 				break
 			case keyLiveOutput:
@@ -256,7 +256,7 @@ class Button {
 				if (this.liveactive) {
 					circle_col = red
 				} else if (this.liveactive_preset) {
-					circle_col = blue
+					circle_col = yellow
 				}
 				break
 		}
