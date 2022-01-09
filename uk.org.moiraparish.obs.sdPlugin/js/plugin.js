@@ -1,9 +1,7 @@
-const debug = false
-
+const debug = true
+// 
 const obs = new OBSWebSocket()
-const sceneAction = 'uk.ac.arts.obs.scene-btn'
-const transitionAction = 'uk.ac.arts.obs.transition-btn'
-const projectorAction = 'uk.ac.arts.obs.projector-btn'
+const sceneAction = 'uk.org.moiraparish.obs.scene-btn'
 
 const ConnectionState = {
 	FAILED: -2,
@@ -22,6 +20,7 @@ let settings = {
 	port: '4444',
 	password: ''
 }
+
 let pluginUUID
 let connectionState = ConnectionState.DISCONNECTED
 let currentPI
@@ -29,10 +28,12 @@ let buttons = {}
 
 let OBS = {
 	scenes: [],
-	transitions: [],
+	sources: [],
 	studioMode: null,
 	preview: '',
-	program: ''
+	program: '',
+	program_sources: [],
+	preview_sources: []
 }
 
 connect()
@@ -72,19 +73,20 @@ obs.on('ConnectionClosed', () => {
 	connectionState = ConnectionState.DISCONNECTED
 	printConnectionState()
 	OBS.scenes = []
-	OBS.transitions = []
+	OBS.sources = []
 	clearPreviewButtons()
 	clearProgramButtons()
-	setButtonsOffline()
+	//setButtonsOffline()
 })
 obs.on('AuthenticationSuccess', () => {
 	connectionState = ConnectionState.AUTHENTICATED
 	printConnectionState()
 	obsUpdateStudioStatus()
 	obsUpdateScenes()
-	obsUpdateTransitions()
+	obsUpdateSources()
+	updateCameraSettings()
 	updateButtons()
-	setButtonsOnline()
+	//setButtonsOnline()
 })
 obs.on('AuthenticationFailure', () => {
 	connectionState = ConnectionState.FAILED
@@ -92,10 +94,12 @@ obs.on('AuthenticationFailure', () => {
 })
 
 obs.on('ScenesChanged', obsUpdateScenes)
-obs.on('TransitionListChanged', obsUpdateTransitions)
 obs.on('PreviewSceneChanged', handlePreviewSceneChanged)
 obs.on('SwitchScenes', handleProgramSceneChanged)
 obs.on('StudioModeSwitched', handleStudioModeSwitched)
+obs.on('SourceCreated', obsUpdateSources)
+obs.on('SourceDestroyed', obsUpdateSources)
+obs.on('SourceRenamed', obsUpdateSources)
 
 obs.on('Exiting', () => {
 	obs.disconnect()
@@ -108,24 +112,28 @@ function obsUpdateScenes() {
 			return s.name
 		})
 		if (currentPI) sendUpdatedScenesToPI()
-		handleProgramSceneChanged({name: data['current-scene']})
+		obs.send('GetCurrentScene').then(handleProgramSceneChanged)
 	})
 	if (OBS.studioMode) obs.send('GetPreviewScene').then(handlePreviewSceneChanged)
 }
 
 
-function obsUpdateStudioStatus() {
-	obs.send('GetStudioModeStatus').then((data) => {
-		OBS.studioMode = data['studio-mode']
+function obsUpdateSources() {
+	obs.send('GetSourcesList').then((data) => {
+		OBS.sources = data.sources.map((s) => {
+			return s.name
+		})
+		if (currentPI) sendUpdatedSourcesToPI()
 	})
 }
 
-function obsUpdateTransitions() {
-	obs.send('GetTransitionList').then((data) => {
-		OBS.transitions = data.transitions.map((s) => {
-			return s.name
-		})
-		if (currentPI && currentPI.action == transitionAction) sendUpdatedTransitionsToPI()
+function updateCameraSettings() {
+	if (currentPI) sendUpdatedCamSettingsToPI()
+}
+
+function obsUpdateStudioStatus() {
+	obs.send('GetStudioModeStatus').then((data) => {
+		OBS.studioMode = data['studio-mode']
 	})
 }
 
@@ -135,29 +143,52 @@ function updatePI(e) {
 		context: e.context,
 		action: e.action
 	}
+	sendUpdatedScenesToPI(e)
+	sendUpdatedSourcesToPI(e)
+	sendUpdatedCamSettingsToPI(e)
+	sendButtonImageToPi(e)
+//	document.querySelector('.sdpi-file-info[for="buttonimage"]').textContent = 'marina.png';
 }
 
-function sendUpdatedScenesToPI() {
+function sendUpdatedScenesToPI(e) {
 	StreamDeck.sendToPI(currentPI.context, sceneAction, {
 		scenes: OBS.scenes
 	})
 }
 
-function sendUpdatedTransitionsToPI() {
-	StreamDeck.sendToPI(currentPI.context, transitionAction, {
-		transitions: OBS.transitions
+function sendUpdatedSourcesToPI(e) {
+	StreamDeck.sendToPI(currentPI.context, sceneAction, {
+		sources: OBS.sources
 	})
 }
 
+function sendButtonImageToPi (e) {
+	StreamDeck.sendToPI(currentPI.context, sceneAction, {
+		buttonimage: buttons[e.context].buttonimage,
+		buttonimagecontents: buttons[e.context].buttonimagecontents
+	})
+
+}
+
+function sendUpdatedCamSettingsToPI(e) {
+	StreamDeck.sendToPI(currentPI.context, sceneAction, {
+		ipaddress: buttons[e.context].ipaddress,
+		preset: buttons[e.context].preset
+	})
+}
+
+
 function handleStreamDeckMessages(e) {
 	const data = JSON.parse(e.data)
-	// if (debug) console.log(`${data.event}: `, data)
+	if (debug) console.log(`${data.event}: `, data)
 	switch(data.event) {
 		case 'deviceDidConnect':
 			StreamDeck.getGlobalSettings(pluginUUID)
 			break
 		case 'keyDown':
 			printConnectionState()
+			console.log("=================================================")
+			console.log("Received Key Down", data)
 			if (connectionState == ConnectionState.AUTHENTICATED) {
 				buttons[data.context].keyDown()
 			} else {
@@ -172,17 +203,26 @@ function handleStreamDeckMessages(e) {
 				}, 10)
 			}
 			break
+		case 'keyUp':
+			printConnectionState()
+			console.log("=================================================")
+			console.log("Received Key Up", data)
+			// Need button repaint to pick up prime changes.
+			if (buttons[data.context].primed == true && buttons[data.context].primed_send == true) updateButtons()
+			buttons[data.context].primed_send = false
+			break;
 		case 'willAppear':
 		case 'titleParametersDidChange':
 		case 'didReceiveSettings':
 			if (buttons[data.context]) {
+				console.log("didReceiveSettings with context", data)
 				buttons[data.context].processStreamDeckData(data)
 			} else {
+				console.log("didReceiveSettings New Button", data)
 				let type = ''
 				if (data.action == sceneAction) type = 'scene'
-				if (data.action == transitionAction) type = 'transition'
-				if (data.action == projectorAction) type = 'projector'
 				buttons[data.context] = new Button(type, data)
+				console.log("didReceiveSettings Updating Button", data)
 				if (type == 'scene') updateButton(data.context)
 			}
 			break
@@ -191,8 +231,6 @@ function handleStreamDeckMessages(e) {
 			break
 		case 'propertyInspectorDidAppear':
 			updatePI(data)
-			sendUpdatedScenesToPI()
-			sendUpdatedTransitionsToPI()
 			break
 		case 'didReceiveGlobalSettings':
 			handleGlobalSettingsUpdate(data)
@@ -228,24 +266,43 @@ function handleGlobalSettingsUpdate(e) {
 	}
 }
 
+
 function handleProgramSceneChanged(e) {
+	console.log("handleProgramSceneChanged: Just before Program Scene Change - OBS is", e)
 	let _program = ''
 	if (e['scene-name']) _program = e['scene-name']
 	if (e['name']) _program = e['name']
 
 	if (_program != OBS.program) {
 		OBS.program = _program
+		// Save the program sources
+		if (e['sources'])  {
+			src = e['sources']
+			OBS.program_sources = src.map((s) => {
+				return s.name
+			})
+		}
+		console.log("Program Scene Change - Updated OBS to", OBS)
 		updateButtons()
 	}
 }
 
 function handlePreviewSceneChanged(e) {
+	console.log("handlePreviewSceneChanged: Just before Preview Scene Change - OBS is", OBS)
 	let _preview = ''
 	if (e['scene-name']) _preview = e['scene-name']
 	if (e['name']) _preview = e['name']
 
 	if (_preview != OBS.preview) {
 		OBS.preview = _preview
+		// Save the preview sources
+		if (e['sources'])  {
+			src = e['sources']
+			OBS.preview_sources = src.map((s) => {
+				return s.name
+			})
+		}
+		console.log("Preview Scene Change - Updated OBS to", OBS)
 		updateButtons()
 	}
 }
@@ -266,25 +323,56 @@ function clearPreviewButtons() {
 }
 
 function updateProgramButtons() {
-	findButtonsByScene(OBS.program).forEach((b) => {
+	programButtons = findButtonsByScene(OBS.program)
+	console.log(">>>>>>>>>>>>>>>Updating Program Buttons", OBS, programButtons)
+	programButtons.forEach((b) => {
 		buttons[b].setProgram()
+	})
+	findButtonsBySource(OBS.program_sources).forEach((b) => {
+		if (!programButtons.includes(b)) buttons[b].setSourceProgram()
 	})
 }
 
 function updatePreviewButtons() {
-	findButtonsByScene(OBS.preview).forEach((b) => {
+	previewButtons = findButtonsByScene(OBS.preview)
+	console.log(">>>>>>>>>>>>>>>>Updating Preview Buttons", OBS, previewButtons)
+	previewButtons.forEach(b => {
 		buttons[b].setPreview()
+	})
+	findButtonsBySource(OBS.preview_sources).forEach(b => {
+		if (!previewButtons.includes(b))  buttons[b].setSourcePreview()
 	})
 }
 
-function updateButtons(mode) {
-	clearPreviewButtons()
+function clearRestOfButtons() {
+	console.log(">>>>>>>>>>>>>>>clearRestOfButtons program:", OBS.program, "preview", OBS.preview)
+	programButtons = findButtonsByScene(OBS.program, OBS.program_sources)
+	previewButtons = findButtonsByScene(OBS.preview, OBS.preview_sources)
+	console.log("Clear Rest of Buttons", "Program Buttons", programButtons, "Preview Buttons", previewButtons)
+	Object.keys(buttons).forEach((b) => {
+		if (programButtons.includes(b)) {
+			console.log("Ignoring program button", b)
+		} else if (previewButtons.includes(b)) {
+			console.log("Ignoring preview button", b)
+		} else {
+			console.log("setting button off air", b)
+			buttons[b].setOffAir()
+		}
+	})
+
+}
+
+function updateButtons() {
+	console.log("..........Running updateButtons")
 	if (OBS.preview != OBS.program) updatePreviewButtons()
-	clearProgramButtons()
 	updateProgramButtons()
+	// Only do this if we have separate preview/live to avoid buttons getting clobbered.
+	if (OBS.preview != OBS.program) clearRestOfButtons()
+
 }
 
 function updateButton(context) {
+	console.log("UpdateButton", context)
 	if (buttons[context].scene == OBS.program) {
 		buttons[context].setProgram()
 	} else if (buttons[context].scene == OBS.preview) {
@@ -294,20 +382,36 @@ function updateButton(context) {
 	}
 }
 
-function findButtonsByScene(scene) {
+function findButtonsByScene(scene, source_list) {
 	let output = []
 	Object.keys(buttons).forEach((b) => {
 		if (buttons[b].scene && buttons[b].scene == scene) {
+			output.push(b)
+		} else if (source_list && source_list.includes(buttons[b].source)) {
 			output.push(b)
 		}
 	})
 	return output
 }
 
+
+function findButtonsBySource(source_list) {
+	let output = []
+	Object.keys(buttons).forEach((b) => {
+		if (buttons[b].source && source_list.includes(buttons[b].source)) {
+			output.push(b)
+		}
+	})
+	return output
+}
+
+
 function findPreviewButtons() {
 	let output = []
 	Object.keys(buttons).forEach((b) => {
-		if (buttons[b].preview && buttons[b].preview == true) {
+		button_state = keyInactive
+		if (buttons[b].state) button_state = buttons[b].state
+		if (button_state == keyPreviewPrimed || button_state == keyPreviewNotPrimed || button_state == keySourcePreview) {
 			output.push(b)
 		}
 	})
@@ -317,21 +421,57 @@ function findPreviewButtons() {
 function findProgramButtons() {
 	let output = []
 	Object.keys(buttons).forEach((b) => {
-		if (buttons[b].program && buttons[b].program == true) {
+		button_state = keyInactive
+		if (buttons[b].state) button_state = buttons[b].state
+		if (button_state == keyLiveOutput || button_state == keySourceLive) {
 			output.push(b)
 		}
 	})
 	return output
 }
 
+function findInactiveButtons () {
+	let output = []
+	Object.keys(buttons).forEach((b) => {
+		button_state = keyInactive
+		if (buttons[b].state) button_state = buttons[b].state
+		if (button_state == keyPreviewPrimed || button_state == keyPreviewNotPrimed || button_state == keySourcePreview) {
+			output.push(b)
+		}
+	})
+	return output
+}
+
+
+function clearPrimeButtons() {
+	console.log("Clearing Primed Buttons")
+	Object.keys(buttons).forEach((b) => {
+		// Only work on this current preview scene to check.
+		if (buttons[b].scene == OBS.preview) {
+			console.log("Clearing primed button", b, buttons[b].coordinates.column, buttons[b].coordinates.row, "button", buttons[b] )
+			buttons[b].clearPrimed()
+		}
+	})
+}
+
+function setLiveActivePresets(live_preset, live_ipaddress, live_source, live_context) {
+	console.log(">>>>>setLiveActivePreset", live_preset, live_ipaddress, live_source, live_context)
+	Object.keys(buttons).forEach((b) => {
+		buttons[b].setLiveActivePreset(live_preset, live_ipaddress, live_source, live_context)
+	})
+}
+
 function setButtonsOffline() {
+	console.log("Setting Buttons Online -------------------------------------------------------------")
 	Object.values(buttons).forEach((b) => {
 		b.setOffline()
 	})
 }
 
 function setButtonsOnline() {
+	console.log("Setting Buttons Online +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
 	Object.values(buttons).forEach((b) => {
 		b.setOnline()
 	})
 }
+
