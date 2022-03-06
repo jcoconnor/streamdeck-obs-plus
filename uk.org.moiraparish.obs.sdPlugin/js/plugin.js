@@ -457,6 +457,7 @@ function clearPrimeButtons() {
 function setLiveActivePresets(live_preset, live_ipaddress, live_source, live_context) {
 	console.log(">>>>>setLiveActivePreset", live_preset, live_ipaddress, live_source, live_context)
 	Object.keys(buttons).forEach((b) => {
+		console.log("setLiveActivePreset:", buttons[b])
 		buttons[b].setLiveActivePreset(live_preset, live_ipaddress, live_source, live_context)
 	})
 }

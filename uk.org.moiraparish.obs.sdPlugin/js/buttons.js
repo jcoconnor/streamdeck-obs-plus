@@ -187,7 +187,10 @@ class Button {
 		// Source match
 		// Presets match
 		// Address match
-		if (this.preset == live_preset && this.ipaddress == live_ipaddress && this.source == live_source) {
+		console.log("setLiveActivePreset - Checking, this:", this, " live_preset:", live_preset, " live_ipaddress:", live_ipaddress, " live_source:", live_source)
+		let trueLivePreset = compareLivePresets(this.preset,live_preset)
+		console.log("setLiveActivePreset - Checking, compare value:", trueLivePreset)
+		if (trueLivePreset && this.ipaddress == live_ipaddress && this.source == live_source) {
 			this.liveactive_preset = true
 			this.liveactive = (live_context == this.context ? true : false)
 			console.log("livepreset - coords", this.coordinates.column, this.coordinates.row, "MATCH", "live_context", live_context, "button", this)
@@ -198,6 +201,7 @@ class Button {
 
 	}
 
+	
 	_setState(newstate) {
 		StreamDeck.setState(this.context, newstate)
 		this.state = newstate
@@ -340,4 +344,25 @@ class Button {
 			Http.send();
 		}
 	}
+}
+function compareLivePresets(preset1, preset2) {
+	// If there is a simple match, then return true.
+	console.log("compareLivePresets preset 1:", preset1, ", preset 2:", preset2)
+	if (preset1 == preset2) {
+		return true
+	}
+	// otherwise extract out all the possible values and look for a match.
+	let preset1Arr = preset1.split(',')
+	let preset2Arr = preset2.split(',')
+	console.log("Compare preset Preset 1 array:", preset1Arr, ", Preset 2 array:", preset2Arr)
+	for (let i = 0; i < preset1Arr.length; i++) {
+		for (let j = 0; j < preset2Arr.length; j++) {
+			console.log("Comparing values i:", i, " j:", j, " preset1:", preset1Arr[i], " preset2:", preset2Arr[j])
+			if (preset1Arr[i] == preset2Arr[j]) {
+				return true
+			}
+		}
+	}
+	console.log("Dropping out - no match.")
+	return false
 }
