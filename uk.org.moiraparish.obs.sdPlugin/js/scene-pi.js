@@ -33,12 +33,6 @@ function connectElgatoStreamDeckSocket(port, uuid, registerEvent, info, action) 
 				if (data.payload.sources) {
 					updateSourceUI(data.payload.sources)
 				}
-				if (data.payload.preset) {
-					document.getElementById('preset').value = data.payload.preset
-				}
-				if (data.payload.ipaddress) {
-					document.getElementById('ipaddress').value = data.payload.ipaddress
-				}
 				if (data.payload.buttonimage) {
 					console.log("Got something on buttonimage", currentButtonImage)
 					currentButtonImage = data.payload.buttonimage
@@ -119,8 +113,6 @@ function updateSettings() {
 	StreamDeck.setSettings(_currentPlugin.context, {
 		scene: document.getElementById('scenes').value,
 		source: document.getElementById('sources').value,
-		preset: document.getElementById('preset').value,
-		ipaddress: document.getElementById('ipaddress').value,
 		buttonimage: decodeURIComponent(document.getElementById('buttonimage').value.replace(/^C:\\fakepath\\/, '')),
 		buttonimagecontents: currentButtonImageContents
 		// Save Button Image here as an image URL so we don't need to keep loading it from file.
@@ -156,8 +148,6 @@ document.getElementById('port').onchange = updateGlobalSettings
 document.getElementById('password').onchange = updateGlobalSettings
 document.getElementById('scenes').onchange = updateScenes
 document.getElementById('sources').onchange = updateSettings
-document.getElementById('preset').onchange = updateSettings
-document.getElementById('ipaddress').onchange = updateSettings
 document.getElementById('buttonimage').onchange = updateButtonSettings
 
 function readFile(fileName, props = {}) {

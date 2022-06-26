@@ -1,6 +1,5 @@
 const keyInactive = 0
-const keyPreviewPrimed = 1
-const keyPreviewNotPrimed = 2
+const keyPreview = 1
 const keySourcePreview = 3
 const keySourceLive = 4
 const keyLiveOutput = 5
@@ -14,10 +13,6 @@ class Button {
 		this.coordinates = data.coordinates
 		this.type = type
 		this.state = keyInactive
-		this.primed = false
-		this.primed_send = false
-		this.liveactive = false
-		this.liveactive_preset = false
 		this.processStreamDeckData(data)
 	}
 
@@ -28,9 +23,6 @@ class Button {
 			if (data.payload.settings.source) this.source = data.payload.settings.source
 			if (data.payload.settings.buttonimage) this.buttonimage = decodeURIComponent(data.payload.settings.buttonimage.replace(/^C:\\fakepath\\/, ''))
 			if (data.payload.settings.buttonimagecontents) this.buttonimagecontents = data.payload.settings.buttonimagecontents
-			if (data.payload.settings.preset) this.preset = data.payload.settings.preset
-			if (data.payload.settings.ipaddress) this.ipaddress = data.payload.settings.ipaddress
-			if (data.payload.settings.lastpreset) this.lastpreset = data.payload.settings.lastpreset
 			if (data.payload.coordinates) this.coordinates = data.payload.coordinates
 			console.log ("Payload Processing ........:", this.scene, "coords", this.coordinates.column, this.coordinates.row, "source", this.source, "state", this.state)
 			switch (this.state) {
@@ -51,26 +43,24 @@ class Button {
 				console.log("Key down here Scene:", this.scene, "coords", this.coordinates.column, this.coordinates.row, "source", this.source, "state", this.state, this)
 				switch (this.state) {
 					case keyInactive:
-						this._PreviewPrimed()
+						this._Preview()
 						break
-					case keyPreviewPrimed:
+					case keyPreview:
 						this._LiveOutput()
 						break
-					case keyPreviewNotPrimed:
-						this._PreviewPrimed()
-						break
 					case keySourcePreview: 
-						this._PreviewPrimed()
+						this._Preview()
 						break
 					case keySourceLive:
-						if (this.liveactive_preset && !this.liveactive) {
-							this._LiveOutput()
+						// Check for overlay - otherwise
+						if (false) {
+							//
 						} else {
 							StreamDeck.sendAlert(this.context)
 						}
 						break
 					case keyLiveOutput:
-						if (this.liveactive_preset && !this.liveactive) {
+						if (false) {
 							this._LiveOutput()
 						} else {
 							StreamDeck.sendAlert(this.context)
@@ -80,9 +70,9 @@ class Button {
 		}
 	}
 
-	_PreviewPrimed() {
-		StreamDeck.sendOk(this.context)
+	_Preview() {
 		if (OBS.scenes.includes(this.scene)) {
+			StreamDeck.sendOk(this.context)
 			if (this.scene != OBS.preview) {
 				console.log("Setting Scene to: ", this.scene)
 				obs.send('SetPreviewScene', {
@@ -91,39 +81,22 @@ class Button {
 			} else {
 				console.log("Scene already set no changing")
 			}
-			clearPrimeButtons()
-			this.primed = true
-			this.primed_send = true
-			this._setState(keyPreviewPrimed)
-			this._setCameraPreset()
+			this._setState(keySourceLive)
 		} else {
 			StreamDeck.sendAlert(this.context)
 		}
 	}
 
-	clearPrimed() {
-		if (this.state == keyPreviewPrimed) this._setState(keyPreviewNotPrimed)
-		this.primed = false
-	}
-
 	_LiveOutput() {
 		StreamDeck.sendOk(this.context)
-		if (this.liveactive_preset && !this.liveactive) {
-			console.log("Live Output Scene switch: ", this.scene)
-			obs.send('SetCurrentScene', {
-				'scene-name': this.scene
-			})
-			console.log("Checking button state", this)
+		
+		if (false) {
+			// Overlay test maybe ??
 		} else {
 			console.log("Starting Scene transition to program")
 			obs.send('TransitionToProgram')
 		}
-		this.liveactive = true // Indicates last live one pressed.
-		this.liveactive_preset = true
 		console.log("Checking button state", this)
-		clearPrimeButtons()
-		console.log("Checking button state", this)
-		setLiveActivePresets(this.preset, this.ipaddress, this.source, this.context)
 		this._setState(keySourceLive)
 	}
 
@@ -135,12 +108,7 @@ class Button {
 		// Add detection here for primed/no primed
 		if (this.type == 'scene' ) {
 			console.log("setPreview", this)
-			if (this.primed) {
-				this._setState(keyPreviewPrimed)
-			} else {
-				this._setState(keyPreviewNotPrimed)
-			}
-			this.liveactive = false
+			this._setState(keyPreview)
 			this.setOnline()
 		}
 	}
@@ -174,33 +142,9 @@ class Button {
 		if (this.type == 'scene') {
 			console.log("Setting OFF AIR", this)
 			this._setState(keyInactive)
-			this.primed = false
-			this.send_primed = false
-			this.liveactive = false
-			this.liveactive_preset = false
 			this.setOffline()
 		}
 	}
-
-	setLiveActivePreset(live_preset, live_ipaddress, live_source, live_context) {
-		// Conditions
-		// Source match
-		// Presets match
-		// Address match
-		console.log("setLiveActivePreset - Checking, this:", this, " live_preset:", live_preset, " live_ipaddress:", live_ipaddress, " live_source:", live_source)
-		let trueLivePreset = compareLivePresets(this.preset,live_preset)
-		console.log("setLiveActivePreset - Checking, compare value:", trueLivePreset)
-		if (trueLivePreset && this.ipaddress == live_ipaddress && this.source == live_source) {
-			this.liveactive_preset = true
-			this.liveactive = (live_context == this.context ? true : false)
-			console.log("livepreset - coords", this.coordinates.column, this.coordinates.row, "MATCH", "live_context", live_context, "button", this)
-		} else {
-			console.log("livepreset - coords", this.coordinates.column, this.coordinates.row, "no match ", this)
-			this.liveactive_preset = false
-		}
-
-	}
-
 	
 	_setState(newstate) {
 		StreamDeck.setState(this.context, newstate)
@@ -239,11 +183,7 @@ class Button {
 		switch (this.state) {
 			case keyInactive:
 				break
-			case keyPreviewPrimed:
-				main_box = green
-				circle_col = green
-				break
-			case keyPreviewNotPrimed:
+			case keyPreview:
 				main_box = green
 				break
 			case keySourcePreview:
@@ -251,17 +191,9 @@ class Button {
 				break
 			case keySourceLive:
 				lower_bar = red
-				if (this.liveactive_preset) {
-					circle_col = yellow
-				}
 				break
 			case keyLiveOutput:
 				main_box = red
-				if (this.liveactive) {
-					circle_col = red
-				} else if (this.liveactive_preset) {
-					circle_col = yellow
-				}
 				break
 		}
 		console.log("***** SetOnline Scene:", this.scene, 
@@ -329,40 +261,4 @@ class Button {
 			btnimg.src = imagecontents
 		});
 	}
-
-	_setCameraPreset() {
-		
-		if (this.ipaddress != "" && this.present != "") {
-			// http://[Camera IP]/cgi-bin/ptzctrl.cgi?ptzcmd&poscall&[Position Number]
-			console.log('Setting Camera Preset:', this.ipaddress, this.preset)
-
-			let camera_ptz_cmd = "http://" + this.ipaddress + "/cgi-bin/ptzctrl.cgi?ptzcmd&poscall&" + this.preset
-			console.log("Camera PTZ Command:", camera_ptz_cmd)
-
-			let Http = new XMLHttpRequest();
-			Http.open("GET", camera_ptz_cmd);
-			Http.send();
-		}
-	}
-}
-function compareLivePresets(preset1, preset2) {
-	// If there is a simple match, then return true.
-	console.log("compareLivePresets preset 1:", preset1, ", preset 2:", preset2)
-	if (preset1 == preset2) {
-		return true
-	}
-	// otherwise extract out all the possible values and look for a match.
-	let preset1Arr = preset1.split(',')
-	let preset2Arr = preset2.split(',')
-	console.log("Compare preset Preset 1 array:", preset1Arr, ", Preset 2 array:", preset2Arr)
-	for (let i = 0; i < preset1Arr.length; i++) {
-		for (let j = 0; j < preset2Arr.length; j++) {
-			console.log("Comparing values i:", i, " j:", j, " preset1:", preset1Arr[i], " preset2:", preset2Arr[j])
-			if (preset1Arr[i] == preset2Arr[j]) {
-				return true
-			}
-		}
-	}
-	console.log("Dropping out - no match.")
-	return false
 }

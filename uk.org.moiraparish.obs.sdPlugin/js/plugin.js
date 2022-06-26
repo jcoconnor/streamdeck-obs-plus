@@ -84,7 +84,6 @@ obs.on('AuthenticationSuccess', () => {
 	obsUpdateStudioStatus()
 	obsUpdateScenes()
 	obsUpdateSources()
-	updateCameraSettings()
 	updateButtons()
 	//setButtonsOnline()
 })
@@ -127,10 +126,6 @@ function obsUpdateSources() {
 	})
 }
 
-function updateCameraSettings() {
-	if (currentPI) sendUpdatedCamSettingsToPI()
-}
-
 function obsUpdateStudioStatus() {
 	obs.send('GetStudioModeStatus').then((data) => {
 		OBS.studioMode = data['studio-mode']
@@ -145,7 +140,6 @@ function updatePI(e) {
 	}
 	sendUpdatedScenesToPI(e)
 	sendUpdatedSourcesToPI(e)
-	sendUpdatedCamSettingsToPI(e)
 	sendButtonImageToPi(e)
 //	document.querySelector('.sdpi-file-info[for="buttonimage"]').textContent = 'marina.png';
 }
@@ -170,12 +164,6 @@ function sendButtonImageToPi (e) {
 
 }
 
-function sendUpdatedCamSettingsToPI(e) {
-	StreamDeck.sendToPI(currentPI.context, sceneAction, {
-		ipaddress: buttons[e.context].ipaddress,
-		preset: buttons[e.context].preset
-	})
-}
 
 
 function handleStreamDeckMessages(e) {
@@ -411,7 +399,7 @@ function findPreviewButtons() {
 	Object.keys(buttons).forEach((b) => {
 		button_state = keyInactive
 		if (buttons[b].state) button_state = buttons[b].state
-		if (button_state == keyPreviewPrimed || button_state == keyPreviewNotPrimed || button_state == keySourcePreview) {
+		if (button_state == keyPreview || button_state == keySourcePreview) {
 			output.push(b)
 		}
 	})
@@ -430,37 +418,6 @@ function findProgramButtons() {
 	return output
 }
 
-function findInactiveButtons () {
-	let output = []
-	Object.keys(buttons).forEach((b) => {
-		button_state = keyInactive
-		if (buttons[b].state) button_state = buttons[b].state
-		if (button_state == keyPreviewPrimed || button_state == keyPreviewNotPrimed || button_state == keySourcePreview) {
-			output.push(b)
-		}
-	})
-	return output
-}
-
-
-function clearPrimeButtons() {
-	console.log("Clearing Primed Buttons")
-	Object.keys(buttons).forEach((b) => {
-		// Only work on this current preview scene to check.
-		if (buttons[b].scene == OBS.preview) {
-			console.log("Clearing primed button", b, buttons[b].coordinates.column, buttons[b].coordinates.row, "button", buttons[b] )
-			buttons[b].clearPrimed()
-		}
-	})
-}
-
-function setLiveActivePresets(live_preset, live_ipaddress, live_source, live_context) {
-	console.log(">>>>>setLiveActivePreset", live_preset, live_ipaddress, live_source, live_context)
-	Object.keys(buttons).forEach((b) => {
-		console.log("setLiveActivePreset:", buttons[b])
-		buttons[b].setLiveActivePreset(live_preset, live_ipaddress, live_source, live_context)
-	})
-}
 
 function setButtonsOffline() {
 	console.log("Setting Buttons Online -------------------------------------------------------------")
