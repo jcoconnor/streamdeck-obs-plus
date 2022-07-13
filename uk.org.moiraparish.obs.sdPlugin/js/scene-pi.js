@@ -78,6 +78,7 @@ function updateSceneUI(obsScenes) {
 		createScene(scene)
 	})
 	document.getElementById('scenes').value = currentScene
+	// Now update sources for this.
 }
 
 function createScene(scene) {
@@ -86,6 +87,8 @@ function createScene(scene) {
 	document.getElementById('scenes').appendChild(option)
 }
 
+// TODO - This takes the list of sources and updates.
+// We need to do this on a scene by scene basis instead.
 function updateSourceUI(obsSources) {
 	console.log("Doing updateSourceUI")
 	document.getElementById('sources').innerText = ''
@@ -103,27 +106,17 @@ function createSource(source) {
 }
 
 function updateScenes() {
+	console.log("Starting updateScenes")
 	// Special handler here to pick up a new set of sources for this scene.
 	updateSettings()
 }
 
-function updateSettings() {
-	console.log("Starting updateSettings")
 
-	StreamDeck.setSettings(_currentPlugin.context, {
-		scene: document.getElementById('scenes').value,
-		source: document.getElementById('sources').value,
-		buttonimage: decodeURIComponent(document.getElementById('buttonimage').value.replace(/^C:\\fakepath\\/, '')),
-		buttonimagecontents: currentButtonImageContents
-		// Save Button Image here as an image URL so we don't need to keep loading it from file.
-		// Can we display image once we have grabbed it ?
-	})
-	console.log("Finished updateSettings call - now reset currents")
-	currentScene = document.getElementById('scenes').value
-	currentSource = document.getElementById('sources').value
-	currentButtonImage = decodeURIComponent(document.getElementById('buttonimage').value.replace(/^C:\\fakepath\\/, ''))
-	console.log("Finished updateSettings", currentButtonImage)
+function updateSources() {
+	console.log("Starting updateSources")
+	updateSettings()
 }
+
 
 function updateButtonSettings () {
 	console.log("Starting updateButtonSettings")
@@ -138,6 +131,27 @@ function updateButtonSettings () {
 	})
 }
 
+
+function updateSettings() {
+	console.log("Starting updateSettings")
+
+	StreamDeck.setSettings(_currentPlugin.context, {
+		// Scene and Source are the actual properties saved in the PI as distinct from scenes and sources.
+		scene: document.getElementById('scenes').value,
+		source: document.getElementById('sources').value,
+		buttonimage: decodeURIComponent(document.getElementById('buttonimage').value.replace(/^C:\\fakepath\\/, '')),
+		buttonimagecontents: currentButtonImageContents
+		// Save Button Image here as an image URL so we don't need to keep loading it from file.
+		// Can we display image once we have grabbed it ?
+	})
+	console.log("Finished updateSettings call - now reset currents")
+	currentScene = document.getElementById('scenes').value
+	currentSource = document.getElementById('sources').value
+	currentButtonImage = decodeURIComponent(document.getElementById('buttonimage').value.replace(/^C:\\fakepath\\/, ''))
+	console.log("Finished updateSettings", currentButtonImage)
+}
+
+
 function updateButtonImage () {
 	console.log("updateButtonImage", currentButtonImage)
 	document.getElementById('buttonimage').value = ""
@@ -147,7 +161,7 @@ document.getElementById('host').onchange = updateGlobalSettings
 document.getElementById('port').onchange = updateGlobalSettings
 document.getElementById('password').onchange = updateGlobalSettings
 document.getElementById('scenes').onchange = updateScenes
-document.getElementById('sources').onchange = updateSettings
+document.getElementById('sources').onchange = updateSources
 document.getElementById('buttonimage').onchange = updateButtonSettings
 
 function readFile(fileName, props = {}) {
@@ -177,3 +191,4 @@ function readFile(fileName, props = {}) {
         request.send();
     });
 }
+

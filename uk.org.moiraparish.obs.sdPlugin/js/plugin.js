@@ -27,7 +27,10 @@ let currentPI
 let buttons = {}
 
 let OBS = {
-	scenes: [],
+	scenes: [
+		{name: "" ,
+		sources: []},
+	],
 	sources: [],
 	studioMode: null,
 	preview: '',
@@ -99,20 +102,57 @@ obs.on('StudioModeSwitched', handleStudioModeSwitched)
 obs.on('SourceCreated', obsUpdateSources)
 obs.on('SourceDestroyed', obsUpdateSources)
 obs.on('SourceRenamed', obsUpdateSources)
+// TODO  Detect scene change in obs.
+//
+obs.on('SwitchScenes', obsUpdateSwitchScenes)
+
+obs.on('SceneItemAdded', obsUpdateUpdateScene)
+obs.on('SceneItemRemoved', obsUpdateUpdateScene)
+
 
 obs.on('Exiting', () => {
 	obs.disconnect()
 	console.log('OBS Disconnecting')
 })
 
+function obsUpdateUpdateScene(scene_name, item_name, item_id) {
+	console.log("obsUpdateUpdateScene Change", "Scene", scene_name, "Scene Sources:", item_name, item_id)
+
+}
+function obsUpdateSwitchScenes(scene, scene_sources) {
+	console.log("obsUpdateSwitchScenes SwitchScenes", "Scene", scene, "Scene Sources:", scene_sources)
+}
+
+
 function obsUpdateScenes() {
+	console.log("Entering obsUpdateScenes")
 	obs.send('GetSceneList').then((data) => {
 		OBS.scenes = data.scenes.map((s) => {
-			return s.name
+			let source_list = []
+			s.sources.forEach((src) => {
+				if (src.type == 'scene') {
+					// Drill down to get additional sources
+					source_list.push("Scene: " + src.name)
+					obs.send('GetSceneItemList', {
+							'sceneName': src.name
+						}).then((scdata) => {
+							console.log("Scdata:", scdata)
+							scdata.sceneItems.forEach((scd) => {
+								source_list.push(scd.sourceName)
+							})
+					})
+				} else {
+					source_list.push(src.name)	
+				}
+			})
+
+			console.log("Working on Scene", s, s.name)
+			return {"name": s.name, "sources": source_list}
 		})
-		if (currentPI) sendUpdatedScenesToPI()
-		obs.send('GetCurrentScene').then(handleProgramSceneChanged)
+		console.log("Scenes returned", OBS.scenes)
+//		obs.send('GetCurrentScene').then(handleProgramSceneChanged)
 	})
+//
 	if (OBS.studioMode) obs.send('GetPreviewScene').then(handlePreviewSceneChanged)
 }
 
@@ -122,7 +162,6 @@ function obsUpdateSources() {
 		OBS.sources = data.sources.map((s) => {
 			return s.name
 		})
-		if (currentPI) sendUpdatedSourcesToPI()
 	})
 }
 
@@ -150,6 +189,7 @@ function sendUpdatedScenesToPI(e) {
 	})
 }
 
+// TODO - need to send updated scenes structure instead of sources to PI
 function sendUpdatedSourcesToPI(e) {
 	StreamDeck.sendToPI(currentPI.context, sceneAction, {
 		sources: OBS.sources
