@@ -128,27 +128,32 @@ function obsUpdateScenes() {
 	console.log("Entering obsUpdateScenes")
 	obs.send('GetSceneList').then((data) => {
 		OBS.scenes = data.scenes.map((s) => {
+			// Make an oject here with source name, source_type, and sub-scene as option.
 			let source_list = []
 			s.sources.forEach((src) => {
-				if (src.type == 'scene') {
-					// Drill down to get additional sources
-					source_list.push("Scene: " + src.name)
-					obs.send('GetSceneItemList', {
-							'sceneName': src.name
-						}).then((scdata) => {
-							console.log("Scdata:", scdata)
-							scdata.sceneItems.forEach((scd) => {
-								source_list.push(scd.sourceName)
-							})
-					})
-				} else {
 					source_list.push(src.name)	
-				}
 			})
 
 			console.log("Working on Scene", s, s.name)
 			return {"name": s.name, "sources": source_list}
 		})
+		let sub_scenes = []
+		OBS.scenes.forEach((s) => {
+
+		})
+/* 			if (src.type == 'scene') {
+				// Drill down to get additional sources
+				source_list.push("Scene: " + src.name)
+				obs.send('GetSceneItemList', {
+						'sceneName': src.name
+					}).then((scdata) => {
+						console.log("Scdata:", scdata)
+						scdata.sceneItems.forEach((scd) => {
+							source_list.push(scd.sourceName)
+						})
+				})
+		}
+ */
 		console.log("Scenes returned", OBS.scenes)
 //		obs.send('GetCurrentScene').then(handleProgramSceneChanged)
 	})
@@ -297,6 +302,7 @@ function handleGlobalSettingsUpdate(e) {
 
 function handleProgramSceneChanged(e) {
 	console.log("handleProgramSceneChanged: Just before Program Scene Change - OBS is", e)
+	console.log("e", e)
 	let _program = ''
 	if (e['scene-name']) _program = e['scene-name']
 	if (e['name']) _program = e['name']
@@ -317,6 +323,7 @@ function handleProgramSceneChanged(e) {
 
 function handlePreviewSceneChanged(e) {
 	console.log("handlePreviewSceneChanged: Just before Preview Scene Change - OBS is", OBS)
+	console.log("e", e)
 	let _preview = ''
 	if (e['scene-name']) _preview = e['scene-name']
 	if (e['name']) _preview = e['name']
@@ -336,6 +343,7 @@ function handlePreviewSceneChanged(e) {
 }
 
 function handleStudioModeSwitched(e) {
+	console.log("handleStudioModeSwitched e", e)
 	OBS.studioMode = e['new-state']
 }
 
