@@ -38,6 +38,10 @@ let OBS = {
 	program_sources: [],
 	preview_sources: []
 }
+let foo = {
+	"": [],
+
+}
 
 connect()
 function connect() {
@@ -131,32 +135,41 @@ function obsUpdateScenes() {
 			// Make an oject here with source name, source_type, and sub-scene as option.
 			let source_list = []
 			s.sources.forEach((src) => {
-					source_list.push(src.name)	
+					source_list.push({'name': src.name, 'type': src.type})	
 			})
-
 			console.log("Working on Scene", s, s.name)
 			return {"name": s.name, "sources": source_list}
 		})
-		let sub_scenes = []
-		OBS.scenes.forEach((s) => {
-
-		})
-/* 			if (src.type == 'scene') {
-				// Drill down to get additional sources
-				source_list.push("Scene: " + src.name)
-				obs.send('GetSceneItemList', {
-						'sceneName': src.name
-					}).then((scdata) => {
-						console.log("Scdata:", scdata)
-						scdata.sceneItems.forEach((scd) => {
-							source_list.push(scd.sourceName)
-						})
-				})
-		}
- */
-		console.log("Scenes returned", OBS.scenes)
 //		obs.send('GetCurrentScene').then(handleProgramSceneChanged)
+	}).then((message) => {
+
+		subscenese = { "": []}
+
+		console.log("Post processing scenes", message)
+		OBS.scenes.forEach((s) => {
+			console.log("Examining Scene", s.name, s.sources)
+			s.sources.forEach((src) => {
+				console.log("=> Examining Source", src)
+				 if (src.type == "scene") {
+					 console.log("=> Extracting Scene and pushing it.")
+					 if (!(src.name in subscenese)) {
+						obs.send('GetSceneItemList', {
+							'sceneName': src.name
+						}).then((data) => {
+							data.sceneItems.forEach((si) => {
+								console.log("=====> Source is: ", si.sourceName)
+							})
+						})
+					 } else {
+						console.log("=> Using previous subscene")
+					 }
+				 }
+			})
+		})
+	
 	})
+	console.log("Scenes returned", OBS.scenes)
+
 //
 	if (OBS.studioMode) obs.send('GetPreviewScene').then(handlePreviewSceneChanged)
 }
