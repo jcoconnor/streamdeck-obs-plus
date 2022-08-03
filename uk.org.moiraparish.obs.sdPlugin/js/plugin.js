@@ -130,46 +130,32 @@ function obsUpdateSwitchScenes(scene, scene_sources) {
 
 function obsUpdateScenes() {
 	console.log("Entering obsUpdateScenes")
+	let scene_dump = {}
 	obs.send('GetSceneList').then((data) => {
-		OBS.scenes = data.scenes.map((s) => {
+		scene_dump = data
+		console.log("Scene Dump Structure", scene_dump)
+	}).then(() => {
+		OBS.scenes = scene_dump.scenes.map((s) => {
 			// Make an oject here with source name, source_type, and sub-scene as option.
 			let source_list = []
 			s.sources.forEach((src) => {
-					source_list.push({'name': src.name, 'type': src.type})	
+					source_list.push({'name': src.name, 'type': src.type})
+					if (src.type == "scene") {
+						scene_dump.scenes.forEach((subscene) => {
+							if (subscene.name == src.name) {
+								subscene.sources.forEach((subSrc) => {
+									source_list.push({'name': subSrc.name, 'type': subSrc.type})
+								})
+							}
+						})
+					}
 			})
-			console.log("Working on Scene", s, s.name)
 			return {"name": s.name, "sources": source_list}
 		})
-//		obs.send('GetCurrentScene').then(handleProgramSceneChanged)
-	}).then((message) => {
-
-		subscenese = { "": []}
-
-		console.log("Post processing scenes", message)
-		OBS.scenes.forEach((s) => {
-			console.log("Examining Scene", s.name, s.sources)
-			s.sources.forEach((src) => {
-				console.log("=> Examining Source", src)
-				 if (src.type == "scene") {
-					 console.log("=> Extracting Scene and pushing it.")
-					 if (!(src.name in subscenese)) {
-						obs.send('GetSceneItemList', {
-							'sceneName': src.name
-						}).then((data) => {
-							data.sceneItems.forEach((si) => {
-								console.log("=====> Source is: ", si.sourceName)
-							})
-						})
-					 } else {
-						console.log("=> Using previous subscene")
-					 }
-				 }
-			})
-		})
-	
+	}).then(() => {
+		// Send scene list to Streamdeck as as global setting.
+		console.log("OBS Scene List", OBS.scenes)
 	})
-	console.log("Scenes returned", OBS.scenes)
-
 //
 	if (OBS.studioMode) obs.send('GetPreviewScene').then(handlePreviewSceneChanged)
 }
