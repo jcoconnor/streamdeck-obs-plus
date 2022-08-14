@@ -30,9 +30,7 @@ function connectElgatoStreamDeckSocket(port, uuid, registerEvent, info, action) 
 				console.log("And its the PROPERTY INSPECTOR", data)
 				currentContext = data.context
 				if (data.payload.settings) updateSettingsUI(data)
-				if (data.payload.scenes) {
-					updateSceneUI(data.payload.scenes)
-				}
+				if (data.payload.scenes) updateSceneUI(data.payload.scenes)
 				if (data.payload.buttonimage) {
 					console.log("Got something on buttonimage", currentButtonImage)
 					currentButtonImage = data.payload.buttonimage
@@ -79,24 +77,14 @@ function updateSceneUI(obsScenes) {
 		createScene(scene)
 	})
 	document.getElementById('scenes').value = currentScene
-	// Now update sources for this.
+	updateSceneSources(currentScene)
+	document.getElementById('sources').value = currentSource
 }
 
 function createScene(scene) {
 	const option = document.createElement('option')
 	option.innerText = scene.name
 	document.getElementById('scenes').appendChild(option)
-}
-
-
-function updateSourceUI(obsSources) {
-	console.log("Doing updateSourceUI")
-	document.getElementById('sources').innerText = ''
-	createSource('')
-	obsSources.forEach((source) => {
-		createSource(source)
-	})
-	document.getElementById('sources').value = currentSource
 }
 
 
