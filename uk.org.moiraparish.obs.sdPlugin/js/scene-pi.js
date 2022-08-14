@@ -4,6 +4,9 @@ let currentSource
 let currentButtonImage
 let currentButtonImageContents = []
 let currentContext
+let obsSceneLookup = {}
+
+let ndi_source = 'ndi_source'
 
 function connectElgatoStreamDeckSocket(port, uuid, registerEvent, info, action) {
 	data = JSON.parse(action)
@@ -29,9 +32,6 @@ function connectElgatoStreamDeckSocket(port, uuid, registerEvent, info, action) 
 				if (data.payload.settings) updateSettingsUI(data)
 				if (data.payload.scenes) {
 					updateSceneUI(data.payload.scenes)
-				}
-				if (data.payload.sources) {
-					updateSourceUI(data.payload.sources)
 				}
 				if (data.payload.buttonimage) {
 					console.log("Got something on buttonimage", currentButtonImage)
@@ -73,6 +73,7 @@ function updateGlobalSettings() {
 function updateSceneUI(obsScenes) {
 	console.log("Doing updateSceneUI")
 	document.getElementById('scenes').innerText = ''
+	obsSceneLookup = obsScenes
 	createScene('')
 	obsScenes.forEach((scene) => {
 		createScene(scene)
@@ -83,12 +84,11 @@ function updateSceneUI(obsScenes) {
 
 function createScene(scene) {
 	const option = document.createElement('option')
-	option.innerText = scene
+	option.innerText = scene.name
 	document.getElementById('scenes').appendChild(option)
 }
 
-// TODO - This takes the list of sources and updates.
-// We need to do this on a scene by scene basis instead.
+
 function updateSourceUI(obsSources) {
 	console.log("Doing updateSourceUI")
 	document.getElementById('sources').innerText = ''
@@ -99,16 +99,34 @@ function updateSourceUI(obsSources) {
 	document.getElementById('sources').value = currentSource
 }
 
+
+function updateScenes() {
+	console.log("Starting updateScenes")
+	scene = document.getElementById('scenes').value
+	updateSceneSources(scene)
+	updateSettings()
+}
+
+
+function updateSceneSources(scene) {
+	document.getElementById('sources').innerText = ''
+	createSource('')
+	obsSceneLookup.forEach((scn) => {
+		if (scn.name == scene) {
+			scn.sources.forEach((src) => {
+				if (src.type == ndi_source) {
+					createSource(src.name)
+				}
+			})
+		}
+	})
+}
+
+
 function createSource(source) {
 	const option = document.createElement('option')
 	option.innerText = source
 	document.getElementById('sources').appendChild(option)
-}
-
-function updateScenes() {
-	console.log("Starting updateScenes")
-	// Special handler here to pick up a new set of sources for this scene.
-	updateSettings()
 }
 
 

@@ -38,10 +38,7 @@ let OBS = {
 	program_sources: [],
 	preview_sources: []
 }
-let foo = {
-	"": [],
 
-}
 
 connect()
 function connect() {
@@ -155,8 +152,8 @@ function obsUpdateScenes() {
 	}).then(() => {
 		// Send scene list to Streamdeck as as global setting.
 		console.log("OBS Scene List", OBS.scenes)
+		sendUpdatedScenesToPI()
 	})
-//
 	if (OBS.studioMode) obs.send('GetPreviewScene').then(handlePreviewSceneChanged)
 }
 
@@ -181,24 +178,17 @@ function updatePI(e) {
 		context: e.context,
 		action: e.action
 	}
-	sendUpdatedScenesToPI(e)
-	sendUpdatedSourcesToPI(e)
+	sendUpdatedScenesToPI()
 	sendButtonImageToPi(e)
 //	document.querySelector('.sdpi-file-info[for="buttonimage"]').textContent = 'marina.png';
 }
 
-function sendUpdatedScenesToPI(e) {
+function sendUpdatedScenesToPI() {
 	StreamDeck.sendToPI(currentPI.context, sceneAction, {
 		scenes: OBS.scenes
 	})
 }
 
-// TODO - need to send updated scenes structure instead of sources to PI
-function sendUpdatedSourcesToPI(e) {
-	StreamDeck.sendToPI(currentPI.context, sceneAction, {
-		sources: OBS.sources
-	})
-}
 
 function sendButtonImageToPi (e) {
 	StreamDeck.sendToPI(currentPI.context, sceneAction, {
