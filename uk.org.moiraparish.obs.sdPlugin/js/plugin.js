@@ -31,7 +31,6 @@ let OBS = {
 		{name: "" ,
 		sources: []},
 	],
-	sources: [],
 	studioMode: null,
 	preview: '',
 	program: '',
@@ -87,7 +86,6 @@ obs.on('AuthenticationSuccess', () => {
 	printConnectionState()
 	obsUpdateStudioStatus()
 	obsUpdateScenes()
-	obsUpdateSources()
 	updateButtons()
 	//setButtonsOnline()
 })
@@ -100,11 +98,7 @@ obs.on('ScenesChanged', obsUpdateScenes)
 obs.on('PreviewSceneChanged', handlePreviewSceneChanged)
 obs.on('SwitchScenes', handleProgramSceneChanged)
 obs.on('StudioModeSwitched', handleStudioModeSwitched)
-obs.on('SourceCreated', obsUpdateSources)
-obs.on('SourceDestroyed', obsUpdateSources)
-obs.on('SourceRenamed', obsUpdateSources)
 // TODO  Detect scene change in obs.
-//
 obs.on('SwitchScenes', obsUpdateSwitchScenes)
 
 obs.on('SceneItemAdded', obsUpdateUpdateScene)
@@ -157,14 +151,6 @@ function obsUpdateScenes() {
 	if (OBS.studioMode) obs.send('GetPreviewScene').then(handlePreviewSceneChanged)
 }
 
-
-function obsUpdateSources() {
-	obs.send('GetSourcesList').then((data) => {
-		OBS.sources = data.sources.map((s) => {
-			return s.name
-		})
-	})
-}
 
 function obsUpdateStudioStatus() {
 	obs.send('GetStudioModeStatus').then((data) => {

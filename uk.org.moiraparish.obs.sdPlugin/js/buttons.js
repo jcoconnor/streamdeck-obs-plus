@@ -71,20 +71,17 @@ class Button {
 	}
 
 	_Preview() {
-		if (OBS.scenes.includes(this.scene)) {
-			StreamDeck.sendOk(this.context)
-			if (this.scene != OBS.preview) {
-				console.log("Setting Scene to: ", this.scene)
-				obs.send('SetPreviewScene', {
-					'scene-name': this.scene
-				})
-			} else {
-				console.log("Scene already set no changing")
-			}
-			this._setState(keySourceLive)
+		// TODO - Removed check on included scene
+		StreamDeck.sendOk(this.context)
+		if (this.scene != OBS.preview) {
+			console.log("Setting Scene to: ", this.scene)
+			obs.send('SetPreviewScene', {
+				'scene-name': this.scene
+			})
 		} else {
-			StreamDeck.sendAlert(this.context)
+			console.log("Scene already set no changing")
 		}
+		this._setState(keySourceLive)
 	}
 
 	_LiveOutput() {
