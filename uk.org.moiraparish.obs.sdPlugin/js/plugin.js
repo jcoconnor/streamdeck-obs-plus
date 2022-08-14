@@ -76,7 +76,6 @@ obs.on('ConnectionClosed', () => {
 	connectionState = ConnectionState.DISCONNECTED
 	printConnectionState()
 	OBS.scenes = []
-	OBS.sources = []
 	clearPreviewButtons()
 	clearProgramButtons()
 	//setButtonsOffline()
@@ -101,8 +100,8 @@ obs.on('StudioModeSwitched', handleStudioModeSwitched)
 // TODO  Detect scene change in obs.
 obs.on('SwitchScenes', obsUpdateSwitchScenes)
 
-obs.on('SceneItemAdded', obsUpdateUpdateScene)
-obs.on('SceneItemRemoved', obsUpdateUpdateScene)
+obs.on('SceneItemAdded', obsUpdateScenes)
+obs.on('SceneItemRemoved', obsUpdateScenes)
 
 
 obs.on('Exiting', () => {
