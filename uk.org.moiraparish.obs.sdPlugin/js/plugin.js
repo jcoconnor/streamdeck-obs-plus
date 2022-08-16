@@ -308,6 +308,7 @@ function handlePreviewSceneChanged(e) {
 		if (e['sources'])  {
 			src = e['sources']
 			OBS.preview_sources = src.map((s) => {
+				// NB TODO - Get original sources here - as need actual NDI source for tracing ......
 				return s.name
 			})
 		}

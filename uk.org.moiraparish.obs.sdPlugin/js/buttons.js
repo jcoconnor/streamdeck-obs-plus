@@ -81,7 +81,7 @@ class Button {
 		} else {
 			console.log("Scene already set no changing")
 		}
-		this._setState(keySourceLive)
+		this._setState(keyPreview)
 	}
 
 	_LiveOutput() {
