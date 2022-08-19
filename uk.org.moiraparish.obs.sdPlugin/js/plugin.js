@@ -150,6 +150,24 @@ function obsUpdateScenes() {
 	if (OBS.studioMode) obs.send('GetPreviewScene').then(handlePreviewSceneChanged)
 }
 
+function obsGetSceneSources(scene_name) {
+
+	let scene_sources = []
+
+	for (sc of OBS.scenes) {
+		if (sc.name == scene_name) {
+			scene_sources = sc.sources
+			break
+		}
+	}
+	return_sources = []
+	for (srcs of scene_sources) {
+		return_sources.push(srcs.name)
+	}
+
+	return return_sources
+}
+
 
 function obsUpdateStudioStatus() {
 	obs.send('GetStudioModeStatus').then((data) => {
@@ -275,8 +293,8 @@ function handleGlobalSettingsUpdate(e) {
 
 
 function handleProgramSceneChanged(e) {
-	console.log("handleProgramSceneChanged: Just before Program Scene Change - OBS is", e)
-	console.log("e", e)
+	console.log("handleProgramSceneChanged: Just before Program Scene Change - OBS is", OBS)
+	console.log("e is ", e)
 	let _program = ''
 	if (e['scene-name']) _program = e['scene-name']
 	if (e['name']) _program = e['name']
@@ -284,12 +302,7 @@ function handleProgramSceneChanged(e) {
 	if (_program != OBS.program) {
 		OBS.program = _program
 		// Save the program sources
-		if (e['sources'])  {
-			src = e['sources']
-			OBS.program_sources = src.map((s) => {
-				return s.name
-			})
-		}
+		OBS.program_sources = obsGetSceneSources(_program)
 		console.log("Program Scene Change - Updated OBS to", OBS)
 		updateButtons()
 	}
@@ -297,7 +310,7 @@ function handleProgramSceneChanged(e) {
 
 function handlePreviewSceneChanged(e) {
 	console.log("handlePreviewSceneChanged: Just before Preview Scene Change - OBS is", OBS)
-	console.log("e", e)
+	console.log("e is ", e)
 	let _preview = ''
 	if (e['scene-name']) _preview = e['scene-name']
 	if (e['name']) _preview = e['name']
@@ -305,13 +318,7 @@ function handlePreviewSceneChanged(e) {
 	if (_preview != OBS.preview) {
 		OBS.preview = _preview
 		// Save the preview sources
-		if (e['sources'])  {
-			src = e['sources']
-			OBS.preview_sources = src.map((s) => {
-				// NB TODO - Get original sources here - as need actual NDI source for tracing ......
-				return s.name
-			})
-		}
+		OBS.preview_sources = obsGetSceneSources(_preview)
 		console.log("Preview Scene Change - Updated OBS to", OBS)
 		updateButtons()
 	}
@@ -394,6 +401,7 @@ function updateButton(context) {
 }
 
 function findButtonsByScene(scene, source_list) {
+	console.log("findButtonsByScene", scene, source_list)
 	let output = []
 	Object.keys(buttons).forEach((b) => {
 		if (buttons[b].scene && buttons[b].scene == scene) {
