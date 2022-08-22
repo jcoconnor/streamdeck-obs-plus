@@ -2,6 +2,7 @@ const debug = true
 // 
 const obs = new OBSWebSocket()
 const sceneAction = 'uk.org.moiraparish.obs.scene-btn'
+const slideAction = 'uk.org.moiraparish.obs.slides-btn'
 
 const ConnectionState = {
 	FAILED: -2,
@@ -97,8 +98,6 @@ obs.on('ScenesChanged', obsUpdateScenes)
 obs.on('PreviewSceneChanged', handlePreviewSceneChanged)
 obs.on('SwitchScenes', handleProgramSceneChanged)
 obs.on('StudioModeSwitched', handleStudioModeSwitched)
-// TODO  Detect scene change in obs.
-obs.on('SwitchScenes', obsUpdateSwitchScenes)
 
 obs.on('SceneItemAdded', obsUpdateScenes)
 obs.on('SceneItemRemoved', obsUpdateScenes)
@@ -108,14 +107,6 @@ obs.on('Exiting', () => {
 	obs.disconnect()
 	console.log('OBS Disconnecting')
 })
-
-function obsUpdateUpdateScene(scene_name, item_name, item_id) {
-	console.log("obsUpdateUpdateScene Change", "Scene", scene_name, "Scene Sources:", item_name, item_id)
-
-}
-function obsUpdateSwitchScenes(scene, scene_sources) {
-	console.log("obsUpdateSwitchScenes SwitchScenes", "Scene", scene, "Scene Sources:", scene_sources)
-}
 
 
 function obsUpdateScenes() {
@@ -212,7 +203,6 @@ function handleStreamDeckMessages(e) {
 			break
 		case 'keyDown':
 			printConnectionState()
-			console.log("=================================================")
 			console.log("Received Key Down", data)
 			if (connectionState == ConnectionState.AUTHENTICATED) {
 				buttons[data.context].keyDown()
@@ -230,7 +220,6 @@ function handleStreamDeckMessages(e) {
 			break
 		case 'keyUp':
 			printConnectionState()
-			console.log("=================================================")
 			console.log("Received Key Up", data)
 			// Need button repaint to pick up prime changes.
 			if (buttons[data.context].primed == true && buttons[data.context].primed_send == true) updateButtons()
@@ -342,7 +331,7 @@ function clearPreviewButtons() {
 
 function updateProgramButtons() {
 	programButtons = findButtonsByScene(OBS.program)
-	console.log(">>>>>>>>>>>>>>>Updating Program Buttons", OBS, programButtons)
+	// console.log(">>>>>>>>>>>>>>>Updating Program Buttons", OBS, programButtons)
 	programButtons.forEach((b) => {
 		buttons[b].setProgram()
 	})
@@ -353,7 +342,7 @@ function updateProgramButtons() {
 
 function updatePreviewButtons() {
 	previewButtons = findButtonsByScene(OBS.preview)
-	console.log(">>>>>>>>>>>>>>>>Updating Preview Buttons", OBS, previewButtons)
+	// console.log(">>>>>>>>>>>>>>>>Updating Preview Buttons", OBS, previewButtons)
 	previewButtons.forEach(b => {
 		buttons[b].setPreview()
 	})
@@ -363,17 +352,17 @@ function updatePreviewButtons() {
 }
 
 function clearRestOfButtons() {
-	console.log(">>>>>>>>>>>>>>>clearRestOfButtons program:", OBS.program, "preview", OBS.preview)
+	// console.log(">>>>>>>>>>>>>>>clearRestOfButtons program:", OBS.program, "preview", OBS.preview)
 	programButtons = findButtonsByScene(OBS.program, OBS.program_sources)
 	previewButtons = findButtonsByScene(OBS.preview, OBS.preview_sources)
-	console.log("Clear Rest of Buttons", "Program Buttons", programButtons, "Preview Buttons", previewButtons)
+	// console.log("Clear Rest of Buttons", "Program Buttons", programButtons, "Preview Buttons", previewButtons)
 	Object.keys(buttons).forEach((b) => {
 		if (programButtons.includes(b)) {
-			console.log("Ignoring program button", b)
+			// console.log("Ignoring program button", b)
 		} else if (previewButtons.includes(b)) {
-			console.log("Ignoring preview button", b)
+			// console.log("Ignoring preview button", b)
 		} else {
-			console.log("setting button off air", b)
+			// console.log("setting button off air", b)
 			buttons[b].setOffAir()
 		}
 	})
@@ -381,7 +370,7 @@ function clearRestOfButtons() {
 }
 
 function updateButtons() {
-	console.log("..........Running updateButtons")
+	// console.log("..........Running updateButtons")
 	if (OBS.preview != OBS.program) updatePreviewButtons()
 	updateProgramButtons()
 	// Only do this if we have separate preview/live to avoid buttons getting clobbered.
@@ -390,7 +379,7 @@ function updateButtons() {
 }
 
 function updateButton(context) {
-	console.log("UpdateButton", context)
+	// console.log("UpdateButton", context)
 	if (buttons[context].scene == OBS.program) {
 		buttons[context].setProgram()
 	} else if (buttons[context].scene == OBS.preview) {
@@ -401,7 +390,7 @@ function updateButton(context) {
 }
 
 function findButtonsByScene(scene, source_list) {
-	console.log("findButtonsByScene", scene, source_list)
+	// console.log("findButtonsByScene", scene, source_list)
 	let output = []
 	Object.keys(buttons).forEach((b) => {
 		if (buttons[b].scene && buttons[b].scene == scene) {

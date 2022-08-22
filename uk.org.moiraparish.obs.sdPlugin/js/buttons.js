@@ -182,6 +182,7 @@ class Button {
 				break
 			case keyPreview:
 				main_box = green
+				circle_col = green
 				break
 			case keySourcePreview:
 				lower_bar = green
@@ -191,6 +192,7 @@ class Button {
 				break
 			case keyLiveOutput:
 				main_box = red
+				circle_col = red
 				break
 		}
 		console.log("***** SetOnline Scene:", this.scene, 

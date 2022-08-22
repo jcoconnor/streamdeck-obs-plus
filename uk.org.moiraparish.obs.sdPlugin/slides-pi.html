@@ -1,26 +1,21 @@
 <!DOCTYPE html>
 <html>
 	<head>
-		<title>Moira Parish - Slide Overlay</title>
+		<title>Moira Parish - Slide Selector</title>
 		<link rel="stylesheet" href="css/sdpi.css">
 		<script src="js/StreamDeck.js" charset="utf-8"></script>
 	</head>
 	<body>
 		<div class="sdpi-wrapper">
-
-			<div type="group" class="sdpi-item" id="ptzgroup">
-				<div class="sdpi-item-label">Scene Select/Source Tally</div>
-				<div class="sdpi-item-group" id="ptzgroup_items">
+			<div type="group" class="sdpi-item" id="slidegroup">
+				<div class="sdpi-item-label">Slides</div>
+				<div class="sdpi-item-group" id="slide_items">
 					<div class="sdpi-item" id="select_single">
-						<div class="sdpi-item-label">Scene</div>
+						<div class="sdpi-item-label">Slide Type</div>
 						<select class="sdpi-item-value select" id="scenes">
-							<option></option>
-						</select>
-					</div>
-					<div class="sdpi-item" id="select_single">
-						<div class="sdpi-item-label">Source</div>
-						<select class="sdpi-item-value select" id="sources">
-							<option></option>
+							<option>Small Slides</option>
+							<option>Large Slides</option>
+							<option>Subtitles</option>
 						</select>
 					</div>
 				</div>
@@ -29,6 +24,11 @@
 					<input class="sdpi-item-value" type="file" id="buttonimage" accept=".jpg, .jpeg, .png">
 				</div>
 			</div>
+
+
+
+
+
 
 			<div type="group" class="sdpi-item" id="globalgroup">
 				<div class="sdpi-item-label">OBS WebSocket Authentication</div>
