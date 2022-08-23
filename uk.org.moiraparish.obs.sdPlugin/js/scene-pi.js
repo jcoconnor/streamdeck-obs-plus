@@ -75,10 +75,6 @@ function updateSettings() {
 }
 
 
-function updateButtonImage () {
-	console.log("updateButtonImage", currentButtonImage)
-	document.getElementById('buttonimage').value = ""
-}
 
 document.getElementById('host').onchange = updateGlobalSettings
 document.getElementById('port').onchange = updateGlobalSettings

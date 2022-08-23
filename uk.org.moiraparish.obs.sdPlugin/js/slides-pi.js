@@ -1,6 +1,5 @@
 
 
-// Common Code .....
 
 
 function updateSlides () {
@@ -24,12 +23,9 @@ function updateSettings() {
 }
 
 
-function updateButtonImage () {
-	console.log("updateButtonImage", currentButtonImage)
-	document.getElementById('buttonimage').value = ""
-}
 
 document.getElementById('host').onchange = updateGlobalSettings
 document.getElementById('port').onchange = updateGlobalSettings
 document.getElementById('password').onchange = updateGlobalSettings
 document.getElementById('slides').onchange = updateSlides
+

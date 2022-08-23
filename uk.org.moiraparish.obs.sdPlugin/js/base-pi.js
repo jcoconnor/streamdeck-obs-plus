@@ -11,6 +11,8 @@ let ndi_source = 'ndi_source'
 function connectElgatoStreamDeckSocket(port, uuid, registerEvent, info, action) {
 	data = JSON.parse(action)
 	console.log("Payload from streamdeck", data.payload)
+    currentScene = data.payload.settings.scene
+	currentSource = data.payload.settings.source
 	_currentPlugin = {
 		action: data.action,
 		context: uuid
@@ -28,7 +30,10 @@ function connectElgatoStreamDeckSocket(port, uuid, registerEvent, info, action) 
 				console.log("And its the PROPERTY INSPECTOR", data)
 				currentContext = data.context
 				if (data.payload.settings) updateSettingsUI(data)
-				if (data.payload.scenes) updateSceneUI(data.payload.scenes)
+				if (data.payload.scenes) {
+                    console.log("Going to updateSceneUI")
+                    updateSceneUI(data.payload.scenes)
+                }
 				if (data.payload.buttonimage) {
 					console.log("Got something on buttonimage", currentButtonImage)
 					currentButtonImage = data.payload.buttonimage
@@ -80,6 +85,11 @@ function updateButtonSettings () {
 	})
 }
 
+
+function updateButtonImage () {
+	console.log("updateButtonImage", currentButtonImage)
+	document.getElementById('buttonimage').value = ""
+}
 
 function readFile(fileName, props = {}) {
     return new Promise(function(resolve, reject) {
