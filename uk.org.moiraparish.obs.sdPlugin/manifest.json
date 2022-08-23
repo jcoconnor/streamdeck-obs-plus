@@ -24,10 +24,10 @@
 		{
 			"Name": "Slides",
 			"UUID": "uk.org.moiraparish.obs.slides-btn",
-			"Icon": "icons/scene",
+			"Icon": "icons/projector",
 			"PropertyInspectorPath": "slides-pi.html",
 			"States": [
-				{"Image":"icons/scene", "Title": "0-Inactive"}
+				{"Image":"icons/projector", "Title": "0-Inactive"}
 			]
 		}
 	],
