@@ -21,7 +21,7 @@ function connectElgatoStreamDeckSocket(port, uuid, registerEvent, info, action) 
     if (data.payload.settings.scene_cam1) currentSceneCam1 = data.payload.settings.scene_cam1
     if (data.payload.settings.scene_cam2) currentSceneCam2 = data.payload.settings.scene_cam2
     if (data.payload.settings.scene_cam3) currentSceneCam3 = data.payload.settings.scene_cam3
-    if (data.payload.settings.scenes_grouping) currentSceneGrouping = data.payload.settings.scenes_grouping
+    if (data.payload.settings.scene_grouping) currentSceneGrouping = data.payload.settings.scene_grouping
 	if (data.payload.buttonimage) currentButtonImage = data.payload.buttonimage
 	if (data.payload.buttonimagecontents) currentButtonImageContents = data.payload.buttonimagecontents
 	_currentPlugin = {
