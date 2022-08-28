@@ -79,6 +79,7 @@ function updateSettings() {
 document.getElementById('host').onchange = updateGlobalSettings
 document.getElementById('port').onchange = updateGlobalSettings
 document.getElementById('password').onchange = updateGlobalSettings
+
 document.getElementById('scenes').onchange = updateScenes
 document.getElementById('sources').onchange = updateSources
 document.getElementById('buttonimage').onchange = updateButtonSettings
