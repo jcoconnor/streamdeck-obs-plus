@@ -59,8 +59,12 @@ function updateSettings() {
 		// Can we display image once we have grabbed it ?
 	})
 	console.log("Finished updateSettings call - now reset currents")
-	currentScene = document.getElementById('scenes').value
-	currentSource = document.getElementById('sources').value
+
+	currentSceneCam1 = document.getElementById('scenes_cam1').value,
+	currentSceneCam2 = document.getElementById('scenes_cam2').value,
+	currentSceneCam3 = document.getElementById('scenes_cam3').value,
+	currentSceneGrouping = document.getElementById('scenes_grouping').value,
+
 	currentButtonImage = decodeURIComponent(document.getElementById('buttonimage').value.replace(/^C:\\fakepath\\/, ''))
 	console.log("Finished updateSettings", currentButtonImage)
 }
@@ -78,5 +82,5 @@ document.getElementById('scenes_cam1').onchange = updateSettings
 document.getElementById('scenes_cam2').onchange = updateSettings
 document.getElementById('scenes_cam3').onchange = updateSettings
 document.getElementById('scenes_grouping').onchange = updateSettings
-
+document.getElementById('buttonimage').onchange = updateButtonSettings
 
