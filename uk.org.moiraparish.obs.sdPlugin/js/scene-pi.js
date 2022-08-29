@@ -7,9 +7,9 @@ function updateSceneUI(obsScenes) {
 	obsScenes.forEach((scene) => {
 		createScene(scene)
 	})
-	document.getElementById('scenes').value = scn_payload.currentScene
-	updateSceneSources(scn_payload.currentScene)
-	document.getElementById('sources').value = scn_payload.currentSource
+	document.getElementById('scenes').value = pi_payload.currentScene
+	updateSceneSources(pi_payload.currentScene)
+	document.getElementById('sources').value = pi_payload.currentSource
 }
 
 function createScene(scene) {
@@ -58,23 +58,20 @@ function updateSources() {
 function updateSettings() {
 	console.log("Starting updateSettings")
 
-	scn_payload.currentScene = document.getElementById('scenes').value
-	scn_payload.currentSource = document.getElementById('sources').value
+	pi_payload.currentScene = document.getElementById('scenes').value
+	pi_payload.currentSource = document.getElementById('sources').value
+
+	pi_payload.currentButtonImage = decodeURIComponent(document.getElementById('buttonimage').value.replace(/^C:\\fakepath\\/, ''))
 
 	StreamDeck.setSettings(_currentPlugin.context, {
 		// Scene and Source are the actual properties saved in the PI as distinct from scenes and sources.
-		scn_payload: scn_payload,
-		buttonimage: decodeURIComponent(document.getElementById('buttonimage').value.replace(/^C:\\fakepath\\/, '')),
-		buttonimagecontents: currentButtonImageContents
+		pi_payload: pi_payload,
 		// Save Button Image here as an image URL so we don't need to keep loading it from file.
 		// Can we display image once we have grabbed it ?
 	})
 	console.log("Finished updateSettings call - now reset currents")
-	currentButtonImage = decodeURIComponent(document.getElementById('buttonimage').value.replace(/^C:\\fakepath\\/, ''))
 	console.log("Finished updateSettings", currentButtonImage)
 }
-
-
 
 document.getElementById('host').onchange = updateGlobalSettings
 document.getElementById('port').onchange = updateGlobalSettings

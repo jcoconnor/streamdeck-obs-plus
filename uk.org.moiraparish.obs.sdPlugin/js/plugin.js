@@ -194,7 +194,7 @@ function updatePI(e) {
 		action: e.action
 	}
 	sendUpdatedScenesToPI()
-	sendButtonImageToPi(e)
+	// sendButtonImageToPi(e) // TODO - do we need this anymore
 //	document.querySelector('.sdpi-file-info[for="buttonimage"]').textContent = 'marina.png';
 }
 
@@ -206,10 +206,11 @@ function sendUpdatedScenesToPI() {
 
 
 function sendButtonImageToPi (e) {
-	StreamDeck.sendToPI(currentPI.context, sceneAction, {
-		buttonimage: buttons[e.context].buttonimage,
-		buttonimagecontents: buttons[e.context].buttonimagecontents
-	})
+	// Todo ????
+//	StreamDeck.sendToPI(currentPI.context, sceneAction, {
+//		buttonimage: buttons[e.context].buttonimage,
+//		buttonimagecontents: buttons[e.context].buttonimagecontents
+//	})
 
 }
 
@@ -412,9 +413,9 @@ function updateButtons() {
 
 function updateButton(context) {
 	// console.log("UpdateButton", context)
-	if (buttons[context].scn_payload.currentScene == OBS.program) {
+	if (buttons[context].pi_payload.currentScene == OBS.program) {
 		buttons[context].setProgram()
-	} else if (buttons[context].scn_payload.currentScene == OBS.preview) {
+	} else if (buttons[context].pi_payload.currentScene == OBS.preview) {
 		buttons[context].setPreview()
 	} else {
 		buttons[context].setOffAir()
@@ -425,9 +426,9 @@ function findButtonsByScene(scene, source_list) {
 	// console.log("findButtonsByScene", scene, source_list)
 	let output = []
 	Object.keys(buttons).forEach((b) => {
-		if (buttons[b].scn_payload.currentScene && buttons[b].scn_payload.currentScene == scene) {
+		if (buttons[b].pi_payload.currentScene && buttons[b].pi_payload.currentScene == scene) {
 			output.push(b)
-		} else if (source_list && source_list.includes(buttons[b].scn_payload.currentSource)) {
+		} else if (source_list && source_list.includes(buttons[b].pi_payload.currentSource)) {
 			output.push(b)
 		}
 	})
@@ -438,7 +439,7 @@ function findButtonsByScene(scene, source_list) {
 function findButtonsBySource(source_list) {
 	let output = []
 	Object.keys(buttons).forEach((b) => {
-		if (buttons[b].scn_payload.currentSource && source_list.includes(buttons[b].scn_payload.currentSource)) {
+		if (buttons[b].pi_payload.currentSource && source_list.includes(buttons[b].pi_payload.currentSource)) {
 			output.push(b)
 		}
 	})

@@ -21,9 +21,7 @@ class Button {
 		if (this.type != '') {
 			console.log("Processing Streamdeck Payload ......", data.payload.state, data, OBS)
 			if (data.payload.coordinates) this.coordinates = data.payload.coordinates
-			if (data.payload.settings.scn_payload) this.scn_payload = data.payload.settings.scn_payload
-			if (data.payload.settings.buttonimage) this.buttonimage = decodeURIComponent(data.payload.settings.buttonimage.replace(/^C:\\fakepath\\/, ''))
-			if (data.payload.settings.buttonimagecontents) this.buttonimagecontents = data.payload.settings.buttonimagecontents
+			if (data.payload.settings.pi_payload) this.pi_payload = data.payload.settings.pi_payload
 			console.log ("Payload Processing ........:", this)
 			switch (this.state) {
 				case keyInactive:
@@ -41,7 +39,7 @@ class Button {
 		console.log("Working on Key Down", this)
 		switch (this.type) {
 			case 'scene':
-				console.log("Key down here Scene:", this.scn_payload.currentScene, "coords", this.coordinates.column, this.coordinates.row, "source", this.scn_payload.currentSource, "state", this.state, this)
+				console.log("Key down here Scene:", this.pi_payload.currentScene, "coords", this.coordinates.column, this.coordinates.row, "source", this.pi_payload.currentSource, "state", this.state, this)
 				switch (this.state) {
 					case keyInactive:
 						this._Preview()
@@ -70,7 +68,7 @@ class Button {
 				}
 				break
 			case 'slide':
-				console.log("Key down here Slide:", this.scn_payload.currentScene, "coords", this.coordinates.column, this.coordinates.row,  "state", this.state, this)
+				console.log("Key down here Slide:", this.pi_payload.currentScene, "coords", this.coordinates.column, this.coordinates.row,  "state", this.state, this)
 				switch (this.state) {
 					case keyInactive:
 						this._PreviewSlide()
@@ -108,10 +106,10 @@ class Button {
 	_Preview() {
 		// TODO - Removed check on included scene
 		StreamDeck.sendOk(this.context)
-		if (this.scn_payload.currentScene != OBS.preview) {
-			console.log("Setting Scene to: ", this.scn_payload.currentScene)
+		if (this.pi_payload.currentScene != OBS.preview) {
+			console.log("Setting Scene to: ", this.pi_payload.currentScene)
 			obs.send('SetPreviewScene', {
-				'scene-name': this.scn_payload.currentScene
+				'scene-name': this.pi_payload.currentScene
 			})
 		} else {
 			console.log("Scene already set no changing")
@@ -129,16 +127,17 @@ class Button {
 		*/
 
 
-		console.log("Checking scene grouping against grouping:", this.scn_payload.currentSceneGrouping, "Program sources", OBS.program_sources, "Preview Sources", OBS.preview_sources)
+		console.log("Checking scene grouping against grouping:", this.pi_payload.currentSceneGrouping, "OBS Object", OBS)
 
 		let base_scene = ""
 		let base_cam = ""
+		let slide_scene = ""
 
-		if (OBS.program_sources.includes(this.scn_payload.currentSceneGrouping)) {
+		if (OBS.program_sources.includes(this.pi_payload.currentSceneGrouping)) {
 			console.log("We have a program match", OBS)
 			base_scene = OBS.program
 			base_cam = OBS.program_cam
-		} else if (OBS.preview_sources.includes(this.scn_payload.currentSceneGrouping)) {
+		} else if (OBS.preview_sources.includes(this.pi_payload.currentSceneGrouping)) {
 			console.log("We have a preview match", OBS)
 			base_scene = OBS.preview
 			base_cam = OBS.preview_cam
@@ -148,27 +147,34 @@ class Button {
 			return
 		}
 
+		// Quick and nasty - check each of the scenes for a camera match.
+		if (base_cam == this.pi_payload.currentSceneCam1_cam) {
+			slide_scene = this.pi_payload.currentSceneCam1
+		} else if (base_cam == this.pi_payload.currentSceneCam2_cam) {
+			slide_scene = this.pi_payload.currentSceneCam2
+		} else if (base_cam == this.pi_payload.currentSceneCam3_cam) {
+			slide_scene = this.pi_payload.currentSceneCam3
+		}
+		console.log("Scene:", base_scene, " Camera:", base_cam, " Slide Scene is:", slide_scene)
+
+		if (slide_scene == '') {
+			console.log("No slide scene match")
+			StreamDeck.sendAlert(this.context)
+			return
+		}
+
 		StreamDeck.sendOk(this.context)
 
-		console.log("Scene:", base_scene, "  Camera: ", base_cam)
+		if (slide_scene != OBS.preview) {
 
-		return
-
-
-		if (this.scn_payload.currentScene != OBS.preview) {
-
-
-
-			console.log("Setting Scene to: ", this.scn_payload.currentScene)
+			console.log("Setting Scene to: ", slide_scene)
 			obs.send('SetPreviewScene', {
-				'scene-name': this.scn_payload.currentScene
+				'scene-name': slide_scene
 			})
 		} else {
 			console.log("Scene already set no changing")
 		}
 		this._setState(keyPreview)
-
-
 	}
 
 	_LiveOutput() {
@@ -239,7 +245,7 @@ class Button {
 	}
 
 	setOnline() {
-		console.log("setOnline Scene:", this.scn_payload.currentScene, "coords", this.coordinates.column, this.coordinates.row, "type", this.type, "source", this.scn_payload.currentSource, "state", this.state, this)
+		console.log("setOnline Scene:", this.pi_payload.currentScene, "coords", this.coordinates.column, this.coordinates.row, "type", this.type, "source", this.pi_payload.currentSource, "state", this.state, this)
 
 		switch (this.type) {
 			case 'scene':
@@ -247,8 +253,8 @@ class Button {
 				var ctx = canvas.getContext('2d')
 
 				ctx.clearRect(0, 0, max_rect_width, max_rect_width);
-				if (this.buttonimagecontents) {
-					this._loadButtonImage(ctx, this.buttonimagecontents).then((values) => {
+				if (this.pi_payload.currentButtonImageContents) {
+					this._loadButtonImage(ctx, this.pi_payload.currentButtonImageContents).then((values) => {
 						this._ActiveButtonBoxes(ctx, canvas)
 					})
 				} else {
@@ -261,8 +267,8 @@ class Button {
 				var ctx = canvas.getContext('2d')
 
 				ctx.clearRect(0, 0, max_rect_width, max_rect_width);
-				if (this.buttonimagecontents) {
-					this._loadButtonImage(ctx, this.buttonimagecontents).then((values) => {
+				if (this.pi_payload.currentButtonImageContents) {
+					this._loadButtonImage(ctx, this.pi_payload.currentButtonImageContents).then((values) => {
 						this._ActiveButtonBoxes(ctx, canvas)
 					})
 				} else {
@@ -300,11 +306,11 @@ class Button {
 				circle_col = red
 				break
 		}
-		console.log("***** SetOnline Scene:", this.scn_payload.currentScene, 
+		console.log("***** SetOnline Scene:", this.pi_payload.currentScene, 
 					"coords", this.coordinates.column, this.coordinates.row, 
-					"source", this.scn_payload.currentSource, 
+					"source", this.pi_payload.currentSource, 
 					"state", this.state, 
-					"image", this.buttonimage,
+					"image", this.pi_payload.currentButtonImage,
 					"main:", main_box, 
 					"lower", lower_bar, 
 					"Circle:", circle_col)
@@ -338,12 +344,12 @@ class Button {
 	}
 
 	setOffline() {
-		console.log("Setting Off Line Scene:", this.scn_payload.currentScene, "coords", this.coordinates.column, this.coordinates.row, "source", this.scn_payload.currentSource, "state", this.state, this)
+		console.log("Setting Off Line Scene:", this.pi_payload.currentScene, "coords", this.coordinates.column, this.coordinates.row, "source", this.pi_payload.currentSource, "state", this.state, this)
 		var canvas = document.getElementById('canvas')
 		var ctx = canvas.getContext('2d')
 		ctx.clearRect(0, 0, max_rect_width, max_rect_width);
-		if (this.buttonimagecontents) {
-			this._loadButtonImage(ctx, this.buttonimagecontents).then((values) => {
+		if (this.pi_payload.currentButtonImageContents) {
+			this._loadButtonImage(ctx, this.pi_payload.currentButtonImageContents).then((values) => {
 				// console.log("Canvas output", canvas.toDataURL())
 				StreamDeck.setImage(this.context, canvas.toDataURL(), StreamDeck.BOTH)
 			})

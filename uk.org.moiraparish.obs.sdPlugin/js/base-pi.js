@@ -1,8 +1,26 @@
 let _currentPlugin
-let currentButtonImage
-let currentButtonImageContents = []
 let currentContext
 let obsSceneLookup = {}
+
+
+
+// common payload for handing struct data around PI and buttons
+
+let pi_payload = {
+    currentScene: '',
+    currentSource: '',
+    currentSceneCam1: '',
+	currentSceneCam1_cam: '',
+    currentSceneCam2: '',
+	currentSceneCam2_cam: '',
+    currentSceneCam3: '',
+	currentSceneCam3_cam: '',
+    currentSceneGrouping: '',
+    currentButtonImage: '',
+    currentButtonImageContents: []
+
+}
+
 
 let ndi_source = 'ndi_source'
 
@@ -10,9 +28,7 @@ function connectElgatoStreamDeckSocket(port, uuid, registerEvent, info, action) 
 	data = JSON.parse(action)
 	console.log("Payload from streamdeck", data.payload)
 	// Not all of these will be present.
-    if (data.payload.settings.scn_payload) scn_payload = data.payload.settings.scn_payload
-	if (data.payload.buttonimage) currentButtonImage = data.payload.buttonimage
-	if (data.payload.buttonimagecontents) currentButtonImageContents = data.payload.buttonimagecontents
+    if (data.payload.settings.pi_payload) pi_payload = data.payload.settings.pi_payload
 	_currentPlugin = {
 		action: data.action,
 		context: uuid
@@ -34,12 +50,6 @@ function connectElgatoStreamDeckSocket(port, uuid, registerEvent, info, action) 
                     console.log("Going to updateSceneUI")
                     updateSceneUI(data.payload.scenes)
                 }
-				if (data.payload.buttonimage) {
-					console.log("Got something on buttonimage", currentButtonImage)
-					currentButtonImage = data.payload.buttonimage
-					currentButtonImageContents = data.payload.buttonimagecontents
-					updateButtonImage()
-				}
 				
 				break
 			case 'didReceiveGlobalSettings':
@@ -78,15 +88,14 @@ function updateButtonSettings () {
 
 	readFile(path, {responseType: 'blob'}).then((b64) => {
 		console.log("Button File ", path, b64);
-		currentButtonImageContents = b64
-		console.log("currentButtonImageContents", currentButtonImageContents)
+		pi_payload.currentButtonImageContents = b64
 		updateSettings()
 		// updateButton(currentContext)
 	})
 }
 
  function updateButtonImage () {
-	console.log("updateButtonImage", currentButtonImage)
+	console.log("updateButtonImage", pi_payload.currentButtonImage)
 	document.getElementById('buttonimage').value = ""
 }
 
@@ -118,3 +127,18 @@ function readFile(fileName, props = {}) {
     });
 }
 
+function piGetSceneCamera(scene_name) {
+	let scene_sources = []
+
+	for (sc of obsSceneLookup) {
+		if (sc.name == scene_name) {
+			scene_sources = sc.sources
+			break
+		}
+	}
+	for (srcs of scene_sources) { 
+		if (srcs.type == 'ndi_source' && srcs.name.includes('Camera')) return srcs.name
+	}
+
+	return ""
+}
