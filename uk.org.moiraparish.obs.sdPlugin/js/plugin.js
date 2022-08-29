@@ -229,15 +229,28 @@ function handleStreamDeckMessages(e) {
 		case 'titleParametersDidChange':
 		case 'didReceiveSettings':
 			if (buttons[data.context]) {
-				console.log("didReceiveSettings with context", data)
+				console.log("didReceiveSettings with context", data.context, data)
 				buttons[data.context].processStreamDeckData(data)
 			} else {
 				console.log("didReceiveSettings New Button", data)
 				let type = ''
-				if (data.action == sceneAction) type = 'scene'
+				switch (data.action) {
+					case sceneAction:
+						console.log("didReceiveSettings: setting scene")
+						type = 'scene'
+						break
+					case slideAction:
+						console.log("didReceiveSettings: setting slide")
+						type = 'slide'
+						break
+					default:
+						type = 'none'
+				}
+				console.log("didReceiveSettings: Creating new button", data.context)
+				
 				buttons[data.context] = new Button(type, data)
 				console.log("didReceiveSettings Updating Button", data)
-				if (type == 'scene') updateButton(data.context)
+				if (type != '') updateButton(data.context)
 			}
 			break
 		case 'willDisappear':

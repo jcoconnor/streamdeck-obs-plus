@@ -1,7 +1,6 @@
 
 
 
-
 function updateSceneUI(obsScenes) {
 	console.log("Doing updateSceneUI")
 
@@ -22,7 +21,6 @@ function updateSceneUI(obsScenes) {
 }
 
 function updateSceneControl(scene_id) {
-	console.log("Working on scene control", scene_id)
 	document.getElementById(scene_id).innerText = ''
 	createScene('', scene_id)
 	obsSceneLookup.forEach((scene) => {
@@ -33,14 +31,12 @@ function updateSceneControl(scene_id) {
 
 
 
-
 function createScene(scene,scene_id) {
 	console.log("Creating scene", scene, scene_id)
 	const option = document.createElement('option')
 	option.innerText = scene.name
 	document.getElementById(scene_id).appendChild(option)
 }
-
 
 
 
@@ -68,8 +64,6 @@ function updateSettings() {
 	currentButtonImage = decodeURIComponent(document.getElementById('buttonimage').value.replace(/^C:\\fakepath\\/, ''))
 	console.log("Finished updateSettings", currentButtonImage)
 }
-
-
 
 
 

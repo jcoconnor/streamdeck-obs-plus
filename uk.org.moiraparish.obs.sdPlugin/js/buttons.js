@@ -17,14 +17,18 @@ class Button {
 	}
 
 	processStreamDeckData(data) {
-		if (this.type == 'scene') {
+		if (this.type != '') {
 			console.log("Processing Streamdeck Payload ......", data.payload.state, data, OBS)
+			if (data.payload.coordinates) this.coordinates = data.payload.coordinates
 			if (data.payload.settings.scene) this.scene = data.payload.settings.scene
 			if (data.payload.settings.source) this.source = data.payload.settings.source
+			if (data.payload.settings.scene_cam1) this.scene_cam1 = data.payload.settings.scene_cam1
+			if (data.payload.settings.scene_cam2) this.scene_cam2 = data.payload.settings.scene_cam2
+			if (data.payload.settings.scene_cam3) this.scene_cam3 = data.payload.settings.scene_cam3
+			if (data.payload.settings.scene_grouping) this.scene_grouping = data.payload.settings.scene_grouping
 			if (data.payload.settings.buttonimage) this.buttonimage = decodeURIComponent(data.payload.settings.buttonimage.replace(/^C:\\fakepath\\/, ''))
 			if (data.payload.settings.buttonimagecontents) this.buttonimagecontents = data.payload.settings.buttonimagecontents
-			if (data.payload.coordinates) this.coordinates = data.payload.coordinates
-			console.log ("Payload Processing ........:", this.scene, "coords", this.coordinates.column, this.coordinates.row, "source", this.source, "state", this.state)
+			console.log ("Payload Processing ........:", this)
 			switch (this.state) {
 				case keyInactive:
 					this.setOffline()
@@ -38,6 +42,7 @@ class Button {
 	}
 
 	keyDown() {
+		console.log("Working on Key Down", this)
 		switch (this.type) {
 			case 'scene':
 				console.log("Key down here Scene:", this.scene, "coords", this.coordinates.column, this.coordinates.row, "source", this.source, "state", this.state, this)
@@ -67,6 +72,27 @@ class Button {
 						}
 						break
 				}
+				break
+			case 'slide':
+				console.log("Key down here Slide:", this.scene, "coords", this.coordinates.column, this.coordinates.row, "source", this.source, "state", this.state, this)
+				switch (this.state) {
+					case keyInactive:
+						StreamDeck.sendAlert(this.context)
+						break
+					case keyPreview:
+						StreamDeck.sendAlert(this.context)
+						break
+					case keySourcePreview: 
+						StreamDeck.sendAlert(this.context)
+						break
+					case keySourceLive:
+						StreamDeck.sendAlert(this.context)
+						break
+					case keyLiveOutput:
+						StreamDeck.sendAlert(this.context)
+						break
+				}
+				break
 		}
 	}
 
