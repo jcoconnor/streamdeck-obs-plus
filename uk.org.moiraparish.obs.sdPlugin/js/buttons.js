@@ -17,16 +17,11 @@ class Button {
 	}
 
 	processStreamDeckData(data) {
+		console.log("Incoming data", data)
 		if (this.type != '') {
 			console.log("Processing Streamdeck Payload ......", data.payload.state, data, OBS)
 			if (data.payload.coordinates) this.coordinates = data.payload.coordinates
-			// Todo - this can be sub-structured tidy it up.
-			if (data.payload.settings.scene) this.scene = data.payload.settings.scene
-			if (data.payload.settings.source) this.source = data.payload.settings.source
-			if (data.payload.settings.scene_cam1) this.scene_cam1 = data.payload.settings.scene_cam1
-			if (data.payload.settings.scene_cam2) this.scene_cam2 = data.payload.settings.scene_cam2
-			if (data.payload.settings.scene_cam3) this.scene_cam3 = data.payload.settings.scene_cam3
-			if (data.payload.settings.scene_grouping) this.scene_grouping = data.payload.settings.scene_grouping
+			if (data.payload.settings.scn_payload) this.scn_payload = data.payload.settings.scn_payload
 			if (data.payload.settings.buttonimage) this.buttonimage = decodeURIComponent(data.payload.settings.buttonimage.replace(/^C:\\fakepath\\/, ''))
 			if (data.payload.settings.buttonimagecontents) this.buttonimagecontents = data.payload.settings.buttonimagecontents
 			console.log ("Payload Processing ........:", this)
@@ -46,7 +41,7 @@ class Button {
 		console.log("Working on Key Down", this)
 		switch (this.type) {
 			case 'scene':
-				console.log("Key down here Scene:", this.scene, "coords", this.coordinates.column, this.coordinates.row, "source", this.source, "state", this.state, this)
+				console.log("Key down here Scene:", this.scn_payload.currentScene, "coords", this.coordinates.column, this.coordinates.row, "source", this.scn_payload.currentSource, "state", this.state, this)
 				switch (this.state) {
 					case keyInactive:
 						this._Preview()
@@ -75,7 +70,7 @@ class Button {
 				}
 				break
 			case 'slide':
-				console.log("Key down here Slide:", this.scene, "coords", this.coordinates.column, this.coordinates.row,  "state", this.state, this)
+				console.log("Key down here Slide:", this.scn_payload.currentScene, "coords", this.coordinates.column, this.coordinates.row,  "state", this.state, this)
 				switch (this.state) {
 					case keyInactive:
 						this._PreviewSlide()
@@ -113,10 +108,10 @@ class Button {
 	_Preview() {
 		// TODO - Removed check on included scene
 		StreamDeck.sendOk(this.context)
-		if (this.scene != OBS.preview) {
-			console.log("Setting Scene to: ", this.scene)
+		if (this.scn_payload.currentScene != OBS.preview) {
+			console.log("Setting Scene to: ", this.scn_payload.currentScene)
 			obs.send('SetPreviewScene', {
-				'scene-name': this.scene
+				'scene-name': this.scn_payload.currentScene
 			})
 		} else {
 			console.log("Scene already set no changing")
@@ -134,16 +129,16 @@ class Button {
 		*/
 
 
-		console.log("Checking scene grouping against grouping:", this.scene_grouping, "Program sources", OBS.program_sources, "Preview Sources", OBS.preview_sources)
+		console.log("Checking scene grouping against grouping:", this.scn_payload.currentSceneGrouping, "Program sources", OBS.program_sources, "Preview Sources", OBS.preview_sources)
 
 		let base_scene = ""
 		let base_cam = ""
 
-		if (OBS.program_sources.includes(this.scene_grouping)) {
+		if (OBS.program_sources.includes(this.scn_payload.currentSceneGrouping)) {
 			console.log("We have a program match", OBS)
 			base_scene = OBS.program
 			base_cam = OBS.program_cam
-		} else if (OBS.preview_sources.includes(this.scene_grouping)) {
+		} else if (OBS.preview_sources.includes(this.scn_payload.currentSceneGrouping)) {
 			console.log("We have a preview match", OBS)
 			base_scene = OBS.preview
 			base_cam = OBS.preview_cam
@@ -160,13 +155,13 @@ class Button {
 		return
 
 
-		if (this.scene != OBS.preview) {
+		if (this.scn_payload.currentScene != OBS.preview) {
 
 
 
-			console.log("Setting Scene to: ", this.scene)
+			console.log("Setting Scene to: ", this.scn_payload.currentScene)
 			obs.send('SetPreviewScene', {
-				'scene-name': this.scene
+				'scene-name': this.scn_payload.currentScene
 			})
 		} else {
 			console.log("Scene already set no changing")
@@ -244,7 +239,7 @@ class Button {
 	}
 
 	setOnline() {
-		console.log("setOnline Scene:", this.scene, "coords", this.coordinates.column, this.coordinates.row, "type", this.type, "source", this.source, "state", this.state, this)
+		console.log("setOnline Scene:", this.scn_payload.currentScene, "coords", this.coordinates.column, this.coordinates.row, "type", this.type, "source", this.scn_payload.currentSource, "state", this.state, this)
 
 		switch (this.type) {
 			case 'scene':
@@ -305,9 +300,9 @@ class Button {
 				circle_col = red
 				break
 		}
-		console.log("***** SetOnline Scene:", this.scene, 
+		console.log("***** SetOnline Scene:", this.scn_payload.currentScene, 
 					"coords", this.coordinates.column, this.coordinates.row, 
-					"source", this.source, 
+					"source", this.scn_payload.currentSource, 
 					"state", this.state, 
 					"image", this.buttonimage,
 					"main:", main_box, 
@@ -343,7 +338,7 @@ class Button {
 	}
 
 	setOffline() {
-		console.log("Setting Off Line Scene:", this.scene, "coords", this.coordinates.column, this.coordinates.row, "source", this.source, "state", this.state, this)
+		console.log("Setting Off Line Scene:", this.scn_payload.currentScene, "coords", this.coordinates.column, this.coordinates.row, "source", this.scn_payload.currentSource, "state", this.state, this)
 		var canvas = document.getElementById('canvas')
 		var ctx = canvas.getContext('2d')
 		ctx.clearRect(0, 0, max_rect_width, max_rect_width);

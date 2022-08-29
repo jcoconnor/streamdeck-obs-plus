@@ -412,9 +412,9 @@ function updateButtons() {
 
 function updateButton(context) {
 	// console.log("UpdateButton", context)
-	if (buttons[context].scene == OBS.program) {
+	if (buttons[context].scn_payload.currentScene == OBS.program) {
 		buttons[context].setProgram()
-	} else if (buttons[context].scene == OBS.preview) {
+	} else if (buttons[context].scn_payload.currentScene == OBS.preview) {
 		buttons[context].setPreview()
 	} else {
 		buttons[context].setOffAir()
@@ -425,9 +425,9 @@ function findButtonsByScene(scene, source_list) {
 	// console.log("findButtonsByScene", scene, source_list)
 	let output = []
 	Object.keys(buttons).forEach((b) => {
-		if (buttons[b].scene && buttons[b].scene == scene) {
+		if (buttons[b].scn_payload.currentScene && buttons[b].scn_payload.currentScene == scene) {
 			output.push(b)
-		} else if (source_list && source_list.includes(buttons[b].source)) {
+		} else if (source_list && source_list.includes(buttons[b].scn_payload.currentSource)) {
 			output.push(b)
 		}
 	})
@@ -438,7 +438,7 @@ function findButtonsByScene(scene, source_list) {
 function findButtonsBySource(source_list) {
 	let output = []
 	Object.keys(buttons).forEach((b) => {
-		if (buttons[b].source && source_list.includes(buttons[b].source)) {
+		if (buttons[b].scn_payload.currentSource && source_list.includes(buttons[b].scn_payload.currentSource)) {
 			output.push(b)
 		}
 	})
