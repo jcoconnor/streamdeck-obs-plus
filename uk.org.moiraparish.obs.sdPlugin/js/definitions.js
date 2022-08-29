@@ -20,3 +20,16 @@ const grey = '#3f3f3f'
 const black = '#000000'
 
 
+// common payload for handing struct data around PI and buttons
+
+let scn_payload = {
+    currentScene: '',
+    currentSource: '',
+    currentSceneCam1: '',
+    currentSceneCam2: '',
+    currentSceneCam3: '',
+    currentSceneGrouping: '',
+    currentButtonImage: '',
+    currentButtonImageContents: []
+
+}

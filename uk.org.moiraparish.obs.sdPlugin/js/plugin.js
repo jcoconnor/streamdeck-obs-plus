@@ -34,7 +34,9 @@ let OBS = {
 	],
 	studioMode: null,
 	preview: '',
+	preview_cam: '',
 	program: '',
+	program_cam: '',
 	program_sources: [],
 	preview_sources: []
 }
@@ -159,6 +161,25 @@ function obsGetSceneSources(scene_name) {
 	return return_sources
 }
 
+function obsGetSceneCamera(scene_name) {
+	console.log("Checking for NDI Camera", scene_name)
+
+	let scene_sources = []
+
+	for (sc of OBS.scenes) {
+		if (sc.name == scene_name) {
+			scene_sources = sc.sources
+			break
+		}
+	}
+	for (srcs of scene_sources) { 
+		console.log("Looking for camera match", srcs)
+		if (srcs.type == 'ndi_source' && srcs.name.includes('Camera')) return srcs.name
+	}
+
+	return ""
+}
+
 
 function obsUpdateStudioStatus() {
 	obs.send('GetStudioModeStatus').then((data) => {
@@ -232,22 +253,18 @@ function handleStreamDeckMessages(e) {
 				console.log("didReceiveSettings with context", data.context, data)
 				buttons[data.context].processStreamDeckData(data)
 			} else {
-				console.log("didReceiveSettings New Button", data)
 				let type = ''
 				switch (data.action) {
 					case sceneAction:
-						console.log("didReceiveSettings: setting scene")
 						type = 'scene'
 						break
 					case slideAction:
-						console.log("didReceiveSettings: setting slide")
 						type = 'slide'
 						break
 					default:
 						type = 'none'
 				}
-				console.log("didReceiveSettings: Creating new button", data.context)
-				
+			
 				buttons[data.context] = new Button(type, data)
 				console.log("didReceiveSettings Updating Button", data)
 				if (type != '') updateButton(data.context)
@@ -305,6 +322,7 @@ function handleProgramSceneChanged(e) {
 		OBS.program = _program
 		// Save the program sources
 		OBS.program_sources = obsGetSceneSources(_program)
+		OBS.program_cam = obsGetSceneCamera(_program)
 		console.log("Program Scene Change - Updated OBS to", OBS)
 		updateButtons()
 	}
@@ -321,6 +339,7 @@ function handlePreviewSceneChanged(e) {
 		OBS.preview = _preview
 		// Save the preview sources
 		OBS.preview_sources = obsGetSceneSources(_preview)
+		OBS.preview_cam = obsGetSceneCamera(_preview)
 		console.log("Preview Scene Change - Updated OBS to", OBS)
 		updateButtons()
 	}

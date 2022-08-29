@@ -20,6 +20,7 @@ class Button {
 		if (this.type != '') {
 			console.log("Processing Streamdeck Payload ......", data.payload.state, data, OBS)
 			if (data.payload.coordinates) this.coordinates = data.payload.coordinates
+			// Todo - this can be sub-structured tidy it up.
 			if (data.payload.settings.scene) this.scene = data.payload.settings.scene
 			if (data.payload.settings.source) this.source = data.payload.settings.source
 			if (data.payload.settings.scene_cam1) this.scene_cam1 = data.payload.settings.scene_cam1
@@ -74,21 +75,34 @@ class Button {
 				}
 				break
 			case 'slide':
-				console.log("Key down here Slide:", this.scene, "coords", this.coordinates.column, this.coordinates.row, "source", this.source, "state", this.state, this)
+				console.log("Key down here Slide:", this.scene, "coords", this.coordinates.column, this.coordinates.row,  "state", this.state, this)
 				switch (this.state) {
 					case keyInactive:
-						StreamDeck.sendAlert(this.context)
+						this._PreviewSlide()
 						break
 					case keyPreview:
+						/*
+						   Transition this to Live.
+						   Any other conditions ?
+						*/
 						StreamDeck.sendAlert(this.context)
 						break
 					case keySourcePreview: 
+						/*
+						   Setup preview on this if we are matching the grouping scene ?
+						*/
 						StreamDeck.sendAlert(this.context)
 						break
 					case keySourceLive:
+						/*
+						   Transition to this if we are matching the grouping scene ?
+						*/
 						StreamDeck.sendAlert(this.context)
 						break
 					case keyLiveOutput:
+						/*
+						   Straight alert - we don't need to do anymore here.
+						*/
 						StreamDeck.sendAlert(this.context)
 						break
 				}
@@ -110,6 +124,58 @@ class Button {
 		this._setState(keyPreview)
 	}
 
+	_PreviewSlide() {
+		/*
+		1. What is scene in live screen
+			Does it match our grouping scene?
+			1. Yes - setup Preview scenario with that.
+			2. No - Check Preview - does it match - then setup scenario
+		2. Alert
+		*/
+
+
+		console.log("Checking scene grouping against grouping:", this.scene_grouping, "Program sources", OBS.program_sources, "Preview Sources", OBS.preview_sources)
+
+		let base_scene = ""
+		let base_cam = ""
+
+		if (OBS.program_sources.includes(this.scene_grouping)) {
+			console.log("We have a program match", OBS)
+			base_scene = OBS.program
+			base_cam = OBS.program_cam
+		} else if (OBS.preview_sources.includes(this.scene_grouping)) {
+			console.log("We have a preview match", OBS)
+			base_scene = OBS.preview
+			base_cam = OBS.preview_cam
+		} else {
+			console.log("We have a NO MATCH")
+			StreamDeck.sendAlert(this.context)
+			return
+		}
+
+		StreamDeck.sendOk(this.context)
+
+		console.log("Scene:", base_scene, "  Camera: ", base_cam)
+
+		return
+
+
+		if (this.scene != OBS.preview) {
+
+
+
+			console.log("Setting Scene to: ", this.scene)
+			obs.send('SetPreviewScene', {
+				'scene-name': this.scene
+			})
+		} else {
+			console.log("Scene already set no changing")
+		}
+		this._setState(keyPreview)
+
+
+	}
+
 	_LiveOutput() {
 		StreamDeck.sendOk(this.context)
 		
@@ -121,6 +187,9 @@ class Button {
 		}
 		console.log("Checking button state", this)
 		this._setState(keySourceLive)
+	}
+
+	_LiveOutputSlide() {
 	}
 
 	_updateTitle() {
@@ -162,7 +231,7 @@ class Button {
 	}
 
 	setOffAir() {
-		if (this.type == 'scene') {
+		if (this.type != '') {
 			console.log("Setting OFF AIR", this)
 			this._setState(keyInactive)
 			this.setOffline()
@@ -191,6 +260,21 @@ class Button {
 					this._ActiveButtonBoxes(ctx, canvas)
 				}
 				break
+
+			case 'slide':
+				var canvas = document.getElementById('canvas')
+				var ctx = canvas.getContext('2d')
+
+				ctx.clearRect(0, 0, max_rect_width, max_rect_width);
+				if (this.buttonimagecontents) {
+					this._loadButtonImage(ctx, this.buttonimagecontents).then((values) => {
+						this._ActiveButtonBoxes(ctx, canvas)
+					})
+				} else {
+					this._ActiveButtonBoxes(ctx, canvas)
+				}
+				break
+	
 			default:
 				console.log("Setting blackimage for main", this)
 				this.setOffline()
