@@ -426,6 +426,7 @@ function findButtonsByScene(scene, source_list) {
 	// console.log("findButtonsByScene", scene, source_list)
 	let output = []
 	Object.keys(buttons).forEach((b) => {
+		// TODO - need to fiddle currentScene here too.....
 		if (buttons[b].pi_payload.currentScene && buttons[b].pi_payload.currentScene == scene) {
 			output.push(b)
 		} else if (source_list && source_list.includes(buttons[b].pi_payload.currentSource)) {

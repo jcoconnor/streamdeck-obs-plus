@@ -74,11 +74,7 @@ class Button {
 						this._PreviewSlide()
 						break
 					case keyPreview:
-						/*
-						   Transition this to Live.
-						   Any other conditions ?
-						*/
-						StreamDeck.sendAlert(this.context)
+						this._LiveOutput()
 						break
 					case keySourcePreview: 
 						/*
@@ -174,6 +170,7 @@ class Button {
 		} else {
 			console.log("Scene already set no changing")
 		}
+		this.pi_payload.currentScene = slide_scene
 		this._setState(keyPreview)
 	}
 
@@ -199,7 +196,7 @@ class Button {
 
 	setPreview() {
 		// Add detection here for primed/no primed
-		if (this.type == 'scene' ) {
+		if (this.type != '' ) {
 			console.log("setPreview", this)
 			this._setState(keyPreview)
 			this.setOnline()
@@ -207,7 +204,7 @@ class Button {
 	}
 
 	setProgram() {
-		if (this.type == 'scene' ) {
+		if (this.type != '' ) {
 			console.log("setProgram", this)
 			this._setState(keyLiveOutput)
 			this.setOnline()
@@ -240,6 +237,7 @@ class Button {
 	}
 	
 	_setState(newstate) {
+		console.log("Setting state to ", newstate)
 		StreamDeck.setState(this.context, newstate)
 		this.state = newstate
 	}
