@@ -17,8 +17,11 @@ let pi_payload = {
 	currentSceneCam3_cam: '',
     currentSceneGrouping: '',
     currentButtonImage: '',
-    currentButtonImageContents: []
-
+    currentButtonImageContents: [],
+	currentSceneCams: [
+		{name: '',
+	     camera: ''}
+	]
 }
 
 
