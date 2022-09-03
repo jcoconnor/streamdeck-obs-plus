@@ -35,10 +35,25 @@ let OBS = {
 	studioMode: null,
 	preview: '',
 	preview_cam: '',
+	preview_slide: false,
+	preview_sources: [],
 	program: '',
 	program_cam: '',
+	program_slide: false,
 	program_sources: [],
-	preview_sources: []
+	// TODO - Move to this structure.
+	prog: {
+		name: '',
+		camera: '',
+		slide: false,
+		sources: [],
+	},
+	prev: {
+		name: '',
+		camera: '',
+		slide: false,
+		sources: [],
+	}
 }
 
 
@@ -435,7 +450,6 @@ function findButtonsByScene(scene, source_list) {
 	})
 	return output
 }
-
 
 function findButtonsBySource(source_list) {
 	let output = []

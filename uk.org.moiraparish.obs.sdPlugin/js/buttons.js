@@ -52,14 +52,14 @@ class Button {
 						break
 					case keySourceLive:
 						// Check for overlay - otherwise
-						if (false) {
-							//
+						if (false) {   // TODO - Check if we can use this one....
+							this._LiveOutput()
 						} else {
 							StreamDeck.sendAlert(this.context)
 						}
 						break
 					case keyLiveOutput:
-						if (false) {
+						if (false) {    // TODO - Check if this preset is live.
 							this._LiveOutput()
 						} else {
 							StreamDeck.sendAlert(this.context)
