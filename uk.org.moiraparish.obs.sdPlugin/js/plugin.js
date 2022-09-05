@@ -33,25 +33,16 @@ let OBS = {
 		sources: []},
 	],
 	studioMode: null,
-	preview: '',
-	preview_cam: '',
-	preview_slide: false,
-	preview_sources: [],
-	program: '',
-	program_cam: '',
-	program_slide: false,
-	program_sources: [],
-	// TODO - Move to this structure.
-	prog: {
+	program: {
 		name: '',
 		camera: '',
-		slide: false,
+		type: '',
 		sources: [],
 	},
-	prev: {
+	preview: {
 		name: '',
 		camera: '',
-		slide: false,
+		type: '',
 		sources: [],
 	}
 }
@@ -334,11 +325,11 @@ function handleProgramSceneChanged(e) {
 	if (e['scene-name']) _program = e['scene-name']
 	if (e['name']) _program = e['name']
 
-	if (_program != OBS.program) {
-		OBS.program = _program
+	if (_program != OBS.program.name) {
+		OBS.program.name = _program
 		// Save the program sources
-		OBS.program_sources = obsGetSceneSources(_program)
-		OBS.program_cam = obsGetSceneCamera(_program)
+		OBS.program.sources = obsGetSceneSources(_program)
+		OBS.program.camera = obsGetSceneCamera(_program)
 		console.log("Program Scene Change - Updated OBS to", OBS)
 		updateButtons()
 	}
@@ -351,11 +342,11 @@ function handlePreviewSceneChanged(e) {
 	if (e['scene-name']) _preview = e['scene-name']
 	if (e['name']) _preview = e['name']
 
-	if (_preview != OBS.preview) {
-		OBS.preview = _preview
+	if (_preview != OBS.preview.name) {
+		OBS.preview.name = _preview
 		// Save the preview sources
-		OBS.preview_sources = obsGetSceneSources(_preview)
-		OBS.preview_cam = obsGetSceneCamera(_preview)
+		OBS.preview.sources = obsGetSceneSources(_preview)
+		OBS.preview.camera = obsGetSceneCamera(_preview)
 		console.log("Preview Scene Change - Updated OBS to", OBS)
 		updateButtons()
 	}
@@ -378,32 +369,30 @@ function clearPreviewButtons() {
 }
 
 function updateProgramButtons() {
-	programButtons = findButtonsByScene(OBS.program)
+	programButtons = findButtonsByScene(OBS.program.name)
 	// console.log(">>>>>>>>>>>>>>>Updating Program Buttons", OBS, programButtons)
 	programButtons.forEach((b) => {
 		buttons[b].setProgram()
 	})
-	findButtonsBySource(OBS.program_sources).forEach((b) => {
+	findButtonsBySource(OBS.program.sources).forEach((b) => {
 		if (!programButtons.includes(b)) buttons[b].setSourceProgram()
 	})
 }
 
 function updatePreviewButtons() {
-	previewButtons = findButtonsByScene(OBS.preview)
+	previewButtons = findButtonsByScene(OBS.preview.name)
 	// console.log(">>>>>>>>>>>>>>>>Updating Preview Buttons", OBS, previewButtons)
 	previewButtons.forEach(b => {
 		buttons[b].setPreview()
 	})
-	findButtonsBySource(OBS.preview_sources).forEach(b => {
+	findButtonsBySource(OBS.preview.sources).forEach(b => {
 		if (!previewButtons.includes(b))  buttons[b].setSourcePreview()
 	})
 }
 
 function clearRestOfButtons() {
-	// console.log(">>>>>>>>>>>>>>>clearRestOfButtons program:", OBS.program, "preview", OBS.preview)
-	programButtons = findButtonsByScene(OBS.program, OBS.program_sources)
-	previewButtons = findButtonsByScene(OBS.preview, OBS.preview_sources)
-	// console.log("Clear Rest of Buttons", "Program Buttons", programButtons, "Preview Buttons", previewButtons)
+	programButtons = findButtonsByScene(OBS.program.name, OBS.program.sources)
+	previewButtons = findButtonsByScene(OBS.preview.name, OBS.preview.sources)
 	Object.keys(buttons).forEach((b) => {
 		if (programButtons.includes(b)) {
 			// console.log("Ignoring program button", b)
@@ -419,18 +408,18 @@ function clearRestOfButtons() {
 
 function updateButtons() {
 	// console.log("..........Running updateButtons")
-	if (OBS.preview != OBS.program) updatePreviewButtons()
+	if (OBS.preview.name != OBS.program.name) updatePreviewButtons()
 	updateProgramButtons()
 	// Only do this if we have separate preview/live to avoid buttons getting clobbered.
-	if (OBS.preview != OBS.program) clearRestOfButtons()
+	if (OBS.preview.name != OBS.program.name) clearRestOfButtons()
 
 }
 
 function updateButton(context) {
 	// console.log("UpdateButton", context)
-	if (buttons[context].pi_payload.currentScene == OBS.program) {
+	if (buttons[context].pi_payload.currentScene == OBS.program.name) {
 		buttons[context].setProgram()
-	} else if (buttons[context].pi_payload.currentScene == OBS.preview) {
+	} else if (buttons[context].pi_payload.currentScene == OBS.preview.name) {
 		buttons[context].setPreview()
 	} else {
 		buttons[context].setOffAir()

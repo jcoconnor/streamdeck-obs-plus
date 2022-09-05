@@ -102,7 +102,7 @@ class Button {
 	_Preview() {
 		// TODO - Removed check on included scene
 		StreamDeck.sendOk(this.context)
-		if (this.pi_payload.currentScene != OBS.preview) {
+		if (this.pi_payload.currentScene != OBS.preview.name) {
 			console.log("Setting Scene to: ", this.pi_payload.currentScene)
 			obs.send('SetPreviewScene', {
 				'scene-name': this.pi_payload.currentScene
@@ -129,14 +129,14 @@ class Button {
 		let base_cam = ""
 		let slide_scene = ""
 
-		if (OBS.program_sources.includes(this.pi_payload.currentSceneGrouping)) {
+		if (OBS.program.sources.includes(this.pi_payload.currentSceneGrouping)) {
 			console.log("We have a program match", OBS)
-			base_scene = OBS.program
-			base_cam = OBS.program_cam
-		} else if (OBS.preview_sources.includes(this.pi_payload.currentSceneGrouping)) {
+			base_scene = OBS.program.name
+			base_cam = OBS.program.camera
+		} else if (OBS.preview.sources.includes(this.pi_payload.currentSceneGrouping)) {
 			console.log("We have a preview match", OBS)
-			base_scene = OBS.preview
-			base_cam = OBS.preview_cam
+			base_scene = OBS.preview.name
+			base_cam = OBS.preview.camera
 		} else {
 			console.log("We have a NO MATCH")
 			StreamDeck.sendAlert(this.context)
@@ -161,7 +161,7 @@ class Button {
 
 		StreamDeck.sendOk(this.context)
 
-		if (slide_scene != OBS.preview) {
+		if (slide_scene != OBS.preview.name) {
 
 			console.log("Setting Scene to: ", slide_scene)
 			obs.send('SetPreviewScene', {
@@ -198,6 +198,7 @@ class Button {
 		// Add detection here for primed/no primed
 		if (this.type != '' ) {
 			console.log("setPreview", this)
+			OBS.program.type = this.type
 			this._setState(keyPreview)
 			this.setOnline()
 		}
@@ -207,6 +208,7 @@ class Button {
 		if (this.type != '' ) {
 			console.log("setProgram", this)
 			this._setState(keyLiveOutput)
+			OBS.program.type = this.type
 			this.setOnline()
 		}
 	}
