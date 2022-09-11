@@ -9,13 +9,13 @@ function updateSceneUI(obsScenes) {
 	obsSceneLookup = obsScenes
 
 	updateSceneControl('scenes_cam1')
-	document.getElementById('scenes_cam1').value = pi_payload.currentSceneCam1
+	document.getElementById('scenes_cam1').value = pi_payload.currentScenes[0].slideScene
 
 	updateSceneControl('scenes_cam2')
-	document.getElementById('scenes_cam2').value = pi_payload.currentSceneCam2
+	document.getElementById('scenes_cam2').value = pi_payload.currentScenes[1].slideScene
 
 	updateSceneControl('scenes_cam3')
-	document.getElementById('scenes_cam3').value = pi_payload.currentSceneCam3
+	document.getElementById('scenes_cam3').value = pi_payload.currentScenes[2].slideScene
 
 	updateSceneControl('scenes_grouping')
 	document.getElementById('scenes_grouping').value = pi_payload.currentSceneGrouping
@@ -45,11 +45,11 @@ function updateSettings() {
 	console.log("Starting updateSettings")
 
 	pi_payload.currentScenes[0].slideScene = document.getElementById('scenes_cam1').value
-	pi_payload.currentScenes[0].camera     = piGetSceneCamera(pi_payload.currentSceneCam1)
+	pi_payload.currentScenes[0].camera     = piGetSceneCamera(pi_payload.currentScenes[0].slideScene)
 	pi_payload.currentScenes[1].slideScene = document.getElementById('scenes_cam2').value
-	pi_payload.currentScenes[1].camera     = piGetSceneCamera(pi_payload.currentSceneCam2)
+	pi_payload.currentScenes[1].camera     = piGetSceneCamera(pi_payload.currentScenes[1].slideScene)
 	pi_payload.currentScenes[2].slideScene = document.getElementById('scenes_cam3').value
-	pi_payload.currentScenes[3].camera     = piGetSceneCamera(pi_payload.currentSceneCam3)
+	pi_payload.currentScenes[2].camera     = piGetSceneCamera(pi_payload.currentScenes[2].slideScene)
 	pi_payload.currentSceneGrouping = document.getElementById('scenes_grouping').value
 	pi_payload.currentButtonImage = decodeURIComponent(document.getElementById('buttonimage').value.replace(/^C:\\fakepath\\/, ''))
 
@@ -63,7 +63,7 @@ function updateSettings() {
 	})
 	console.log("Finished updateSettings call - now reset currents")
 
-	console.log("Finished updateSettings", currentButtonImage)
+	console.log("Finished updateSettings", pi_payload.currentButtonImage)
 }
 
 

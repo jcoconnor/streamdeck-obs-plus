@@ -9,17 +9,15 @@ let obsSceneLookup = {}
 let pi_payload = {
     currentScene: '',
     currentSource: '',
-	currentScenes: [{
+	currentScenes: [
+		{
      		slideScene: '',
 	 		camera: ''
-	}],
+		}
+	],
     currentSceneGrouping: '',
     currentButtonImage: '',
-    currentButtonImageContents: [],
-	currentSceneCams: [
-		{name: '',
-	     camera: ''}
-	]
+    currentButtonImageContents: []
 }
 
 
