@@ -126,33 +126,34 @@ class Button {
 
 		console.log("Checking scene grouping against grouping:", this.pi_payload.currentSceneGrouping, "OBS Object", OBS)
 
-		let base_scene = ""
-		let base_cam = ""
-		let slide_scene = ""
+		let baseScene = ""
+		let baseCamera = ""
+		let slideScene = ""
 
 		if (OBS.program.sources.includes(this.pi_payload.currentSceneGrouping)) {
 			console.log("We have a program match", OBS)
-			base_scene = OBS.program.sceneName
-			base_cam = OBS.program.camera
+			baseScene = OBS.program.sceneName
+			baseCamera = OBS.program.camera
 		} else if (OBS.preview.sources.includes(this.pi_payload.currentSceneGrouping)) {
 			console.log("We have a preview match", OBS)
-			base_scene = OBS.preview.sceneName
-			base_cam = OBS.preview.camera
+			baseScene = OBS.preview.sceneName
+			baseCamera = OBS.preview.camera
 		} else {
 			console.log("We have a NO MATCH")
 			StreamDeck.sendAlert(this.context)
 			return
 		}
 
-		slide_scene = ''
+		// See if we can find slide scene match.
+		slideScene = ''
 		for (curSc of this.pi_payload.currentScenes) {
-			if (base_cam == curSc.camera) {
-				slide_scene = curSc.slideScene
+			if (baseCamera == curSc.camera) {
+				slideScene = curSc.slideScene
 			}
 		}
-		console.log("Scene:", base_scene, " Camera:", base_cam, " Slide Scene is:", slide_scene)
+		console.log("Scene:", baseScene, " Camera:", baseCamera, " Slide Scene is:", slideScene)
 
-		if (slide_scene == '') {
+		if (slideScene == '') {
 			console.log("No slide scene match")
 			StreamDeck.sendAlert(this.context)
 			return
@@ -160,16 +161,17 @@ class Button {
 
 		StreamDeck.sendOk(this.context)
 
-		if (slide_scene != OBS.preview.sceneName) {
+		if (slideScene != OBS.preview.sceneName) {
 
-			console.log("Setting Scene to: ", slide_scene)
+			console.log("Setting Scene to: ", slideScene)
 			obs.send('SetPreviewScene', {
-				'scene-name': slide_scene
+				'scene-name': slideScene
 			})
 		} else {
 			console.log("Scene already set no changing")
 		}
-		this.pi_payload.currentScene = slide_scene
+		this.pi_payload.currentScene = slideScene
+		this.pi_payload.baseScene = baseScene
 		this._setState(keyPreview)
 	}
 
