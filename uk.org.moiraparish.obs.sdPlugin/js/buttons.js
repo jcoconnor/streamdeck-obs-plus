@@ -12,6 +12,7 @@ class Button {
 		this.context = data.context
 		this.coordinates = data.coordinates
 		this.type = type
+		this.slidegroup = false
 		this.state = keyInactive
 		this.processStreamDeckData(data)
 	}
@@ -102,7 +103,7 @@ class Button {
 	_Preview() {
 		// TODO - Removed check on included scene
 		StreamDeck.sendOk(this.context)
-		if (this.pi_payload.currentScene != OBS.preview.name) {
+		if (this.pi_payload.currentScene != OBS.preview.sceneName) {
 			console.log("Setting Scene to: ", this.pi_payload.currentScene)
 			obs.send('SetPreviewScene', {
 				'scene-name': this.pi_payload.currentScene
@@ -131,11 +132,11 @@ class Button {
 
 		if (OBS.program.sources.includes(this.pi_payload.currentSceneGrouping)) {
 			console.log("We have a program match", OBS)
-			base_scene = OBS.program.name
+			base_scene = OBS.program.sceneName
 			base_cam = OBS.program.camera
 		} else if (OBS.preview.sources.includes(this.pi_payload.currentSceneGrouping)) {
 			console.log("We have a preview match", OBS)
-			base_scene = OBS.preview.name
+			base_scene = OBS.preview.sceneName
 			base_cam = OBS.preview.camera
 		} else {
 			console.log("We have a NO MATCH")
@@ -143,13 +144,11 @@ class Button {
 			return
 		}
 
-		// Quick and nasty - check each of the scenes for a camera match.
-		if (base_cam == this.pi_payload.currentSceneCam1_cam) {
-			slide_scene = this.pi_payload.currentSceneCam1
-		} else if (base_cam == this.pi_payload.currentSceneCam2_cam) {
-			slide_scene = this.pi_payload.currentSceneCam2
-		} else if (base_cam == this.pi_payload.currentSceneCam3_cam) {
-			slide_scene = this.pi_payload.currentSceneCam3
+		slide_scene = ''
+		for (curSc of this.pi_payload.currentScenes) {
+			if (base_cam == curSc.camera) {
+				slide_scene = curSc.slideScene
+			}
 		}
 		console.log("Scene:", base_scene, " Camera:", base_cam, " Slide Scene is:", slide_scene)
 
@@ -161,7 +160,7 @@ class Button {
 
 		StreamDeck.sendOk(this.context)
 
-		if (slide_scene != OBS.preview.name) {
+		if (slide_scene != OBS.preview.sceneName) {
 
 			console.log("Setting Scene to: ", slide_scene)
 			obs.send('SetPreviewScene', {
@@ -198,8 +197,12 @@ class Button {
 		// Add detection here for primed/no primed
 		if (this.type != '' ) {
 			console.log("setPreview", this)
-			OBS.program.type = this.type
 			this._setState(keyPreview)
+			OBS.preview.type = this.type
+			if (this.type == 'scene') {
+				// TODO
+
+			}
 			this.setOnline()
 		}
 	}
@@ -218,6 +221,10 @@ class Button {
 			console.log("setSourcePreview", this)
 			this._setState(keySourcePreview)
 			this.state = keySourcePreview
+			// TODO - Button detection.
+			if (OBS.preview.type == 'scene') {
+
+			}
 			this.setOnline()
 		}
 	}

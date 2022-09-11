@@ -44,12 +44,12 @@ function createScene(scene,scene_id) {
 function updateSettings() {
 	console.log("Starting updateSettings")
 
-	pi_payload.currentSceneCam1 = document.getElementById('scenes_cam1').value
-	pi_payload.currentSceneCam1_cam = piGetSceneCamera(pi_payload.currentSceneCam1)
-	pi_payload.currentSceneCam2 = document.getElementById('scenes_cam2').value
-	pi_payload.currentSceneCam2_cam = piGetSceneCamera(pi_payload.currentSceneCam2)
-	pi_payload.currentSceneCam3 = document.getElementById('scenes_cam3').value
-	pi_payload.currentSceneCam3_cam = piGetSceneCamera(pi_payload.currentSceneCam3)
+	pi_payload.currentScenes[0].slideScene = document.getElementById('scenes_cam1').value
+	pi_payload.currentScenes[0].camera     = piGetSceneCamera(pi_payload.currentSceneCam1)
+	pi_payload.currentScenes[1].slideScene = document.getElementById('scenes_cam2').value
+	pi_payload.currentScenes[1].camera     = piGetSceneCamera(pi_payload.currentSceneCam2)
+	pi_payload.currentScenes[2].slideScene = document.getElementById('scenes_cam3').value
+	pi_payload.currentScenes[3].camera     = piGetSceneCamera(pi_payload.currentSceneCam3)
 	pi_payload.currentSceneGrouping = document.getElementById('scenes_grouping').value
 	pi_payload.currentButtonImage = decodeURIComponent(document.getElementById('buttonimage').value.replace(/^C:\\fakepath\\/, ''))
 

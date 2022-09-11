@@ -9,12 +9,10 @@ let obsSceneLookup = {}
 let pi_payload = {
     currentScene: '',
     currentSource: '',
-    currentSceneCam1: '',     // TODO - array this as a struct - cleaner.
-	currentSceneCam1_cam: '',
-    currentSceneCam2: '',
-	currentSceneCam2_cam: '',
-    currentSceneCam3: '',
-	currentSceneCam3_cam: '',
+	currentScenes: [{
+     		slideScene: '',
+	 		camera: ''
+	}],
     currentSceneGrouping: '',
     currentButtonImage: '',
     currentButtonImageContents: [],
