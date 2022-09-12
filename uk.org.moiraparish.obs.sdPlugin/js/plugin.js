@@ -36,14 +36,30 @@ let OBS = {
 	program: {
 		sceneName: '',
 		camera: '',
-		type: '',
-		sources: [],
+		current: {
+			button: '',
+			type: ''
+
+		},
+		next: {
+			button: '',
+			type: ''
+		},
+		sources: []
 	},
 	preview: {
 		sceneName: '',
 		camera: '',
-		type: '',
-		sources: [],
+		current: {
+			button: '',
+			type: ''
+
+		},
+		next: {
+			button: '',
+			type: ''
+		},
+		sources: []
 	}
 }
 

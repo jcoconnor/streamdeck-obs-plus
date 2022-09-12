@@ -200,7 +200,8 @@ class Button {
 		if (this.type != '' ) {
 			console.log("setPreview", this)
 			this._setState(keyPreview)
-			OBS.preview.type = this.type
+			OBS.preview.next.type = this.type
+			OBS.preview.next.button = this.context
 			if (this.type == 'scene') {
 				// TODO
 
@@ -213,7 +214,9 @@ class Button {
 		if (this.type != '' ) {
 			console.log("setProgram", this)
 			this._setState(keyLiveOutput)
-			OBS.program.type = this.type
+			OBS.program.next.type = this.type
+			OBS.program.next.button = this.context
+			
 			this.setOnline()
 		}
 	}
