@@ -146,6 +146,7 @@ class Button {
 
 		// See if we can find slide scene match.
 		slideScene = ''
+		let curSc = {}
 		for (curSc of this.pi_payload.currentScenes) {
 			if (baseCamera == curSc.camera) {
 				slideScene = curSc.slideScene

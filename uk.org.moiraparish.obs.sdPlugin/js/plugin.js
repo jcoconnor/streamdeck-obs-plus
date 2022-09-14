@@ -39,7 +39,6 @@ let OBS = {
 		current: {
 			button: '',
 			type: ''
-
 		},
 		next: {
 			button: '',
@@ -53,7 +52,6 @@ let OBS = {
 		current: {
 			button: '',
 			type: ''
-
 		},
 		next: {
 			button: '',
@@ -159,8 +157,9 @@ function obsUpdateScenes() {
 		})
 	}).then(() => {
 		// Send scene list to Streamdeck as as global setting.
+		// TODO - Holding on this as it fails until we are connected.
 		console.log("OBS Scene List", OBS.scenes)
-		sendUpdatedScenesToPI()
+		// sendUpdatedScenesToPI()
 	})
 	if (OBS.studioMode) obs.send('GetPreviewScene').then(handlePreviewSceneChanged)
 }

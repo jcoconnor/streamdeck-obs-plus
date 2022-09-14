@@ -9,13 +9,14 @@ let obsSceneLookup = {}
 let pi_payload = {
     currentScene: '',         // Currently selected scene for this button (also doubles as active slide scene for slice controls)
     currentSource: '',        // Current Camera source for this scene (NDI cameras only.)
-	currentScenes: [          // For Slide Scenes - list of slide scenes.
+    currentScenes: [          // For Slide Scenes - list of slide scenes.
 		{
      		slideScene: '',
 	 		camera: ''
 		}
 	],
-	baseScene: '',            // Base scene
+	baseScene: '',            // Base scene - Common scene group for slide scene selections
+	cameraScene: '',          // Camera scene used as bas
     currentSceneGrouping: '',
     currentButtonImage: '',
     currentButtonImageContents: []
