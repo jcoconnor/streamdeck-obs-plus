@@ -105,6 +105,8 @@ class Button {
 		StreamDeck.sendOk(this.context)
 		if (this.pi_payload.currentScene != OBS.preview.sceneName) {
 			console.log("Setting Scene to: ", this.pi_payload.currentScene)
+			OBS.preview.next.button = this.context
+			OBS.preview.next.type = this.type
 			obs.send('SetPreviewScene', {
 				'scene-name': this.pi_payload.currentScene
 			})
@@ -123,12 +125,11 @@ class Button {
 		2. Alert
 		*/
 
-
 		console.log("Checking scene grouping against grouping:", this.pi_payload.currentSceneGrouping, "OBS Object", OBS)
 
-		let baseScene = ""
-		let baseCamera = ""
-		let slideScene = ""
+		let baseScene = ''
+		let baseCamera = ''
+		let slideScene = ''
 
 		if (OBS.program.sources.includes(this.pi_payload.currentSceneGrouping)) {
 			console.log("We have a program match", OBS)
@@ -165,15 +166,17 @@ class Button {
 		if (slideScene != OBS.preview.sceneName) {
 
 			console.log("Setting Scene to: ", slideScene)
+			this.pi_payload.currentScene = slideScene
+			this.pi_payload.baseScene = baseScene
+			OBS.preview.next.button = this.context
+			OBS.preview.next.type = this.type
+			this._setState(keyPreview)
 			obs.send('SetPreviewScene', {
 				'scene-name': slideScene
 			})
 		} else {
 			console.log("Scene already set no changing")
 		}
-		this.pi_payload.currentScene = slideScene
-		this.pi_payload.baseScene = baseScene
-		this._setState(keyPreview)
 	}
 
 	_LiveOutput() {
@@ -183,6 +186,8 @@ class Button {
 			// Overlay test maybe ??
 		} else {
 			console.log("Starting Scene transition to program")
+			OBS.preview.next.button = this.context
+			OBS.preview.next.type = this.type
 			obs.send('TransitionToProgram')
 		}
 		console.log("Checking button state", this)
@@ -201,12 +206,8 @@ class Button {
 		if (this.type != '' ) {
 			console.log("setPreview", this)
 			this._setState(keyPreview)
-			OBS.preview.next.type = this.type
-			OBS.preview.next.button = this.context
-			if (this.type == 'scene') {
-				// TODO
-
-			}
+			OBS.preview.current.type = this.type
+			OBS.preview.current.button = this.context
 			this.setOnline()
 		}
 	}
@@ -215,9 +216,8 @@ class Button {
 		if (this.type != '' ) {
 			console.log("setProgram", this)
 			this._setState(keyLiveOutput)
-			OBS.program.next.type = this.type
-			OBS.program.next.button = this.context
-			
+			OBS.program.current.type = this.type
+			OBS.program.current.button = this.context
 			this.setOnline()
 		}
 	}
