@@ -153,7 +153,7 @@ class Button {
 				slideScene = curSc.slideScene
 			}
 		}
-		console.log("Scene:", baseScene, " Camera:", baseCamera, " Slide Scene is:", slideScene)
+		console.log("baseScene:", baseScene, " Camera:", baseCamera, " Slide Scene is:", slideScene)
 
 		if (slideScene == '') {
 			console.log("No slide scene match")

@@ -44,6 +44,7 @@ let OBS = {
 			button: '',
 			type: ''
 		},
+		baseScene: '',
 		sources: []
 	},
 	preview: {
@@ -57,6 +58,7 @@ let OBS = {
 			button: '',
 			type: ''
 		},
+		baseScene: '',
 		sources: []
 	}
 }
@@ -338,9 +340,22 @@ function handleProgramSceneChanged(e) {
 	let _program = ''
 	if (e['scene-name']) _program = e['scene-name']
 	if (e['name']) _program = e['name']
+	OBS.program.baseScene = ''
 
 	if (_program != OBS.program.sceneName) {
+		console.log("_program:", _program, "sceneName:", OBS.program.sceneName )
+		let button = {}
 		OBS.program.sceneName = _program
+		if (OBS.program.next.button) {
+			button = buttons[OBS.program.next.button]
+			console.log("pi_Payload:", button.pi_payload, "type:", buttons.type)
+			if (button.type == 'slide') {
+				// TODO Update other slides to match this - loop thru all slide buttons and update.
+				// Copy Base Scene to OBS.
+				OBS.program.baseScene = button.pi_payload.baseScene
+			}
+		}
+
 		// Save the program sources
 		OBS.program.sources = obsGetSceneSources(_program)
 		OBS.program.camera = obsGetSceneCamera(_program)
@@ -351,13 +366,28 @@ function handleProgramSceneChanged(e) {
 }
 
 function handlePreviewSceneChanged(e) {
+	// NB - think there is an async issue with this dump as it reflects the post change scenario.
 	console.log("handlePreviewSceneChanged: Just before Preview Scene Change - OBS is", OBS)
 	console.log("e is ", e)
 	let _preview = ''
 	if (e['scene-name']) _preview = e['scene-name']
 	if (e['name']) _preview = e['name']
+	OBS.preview.baseScene = ''
 
 	if (_preview != OBS.preview.sceneName) {
+		console.log("_preview:", _preview, "sceneName:", OBS.preview.sceneName )
+		let button = {}
+		if (OBS.preview.next.button) {
+			button = buttons[OBS.preview.next.button]
+			console.log("pi_Payload:", button.pi_payload, "type:", button.type)
+			if (button.type == 'slide') {
+				// TODO Update other slides to match this - loop thru all slide buttons and update.
+
+				// Copy Base Scene to Preview.
+				OBS.preview.baseScene = button.pi_payload.baseScene
+
+			}
+		}
 		OBS.preview.sceneName = _preview
 		// Save the preview sources
 		OBS.preview.sources = obsGetSceneSources(_preview)
@@ -386,7 +416,7 @@ function clearPreviewButtons() {
 
 function updateProgramButtons() {
 	programButtons = findButtonsByScene(OBS.program.sceneName)
-	// console.log(">>>>>>>>>>>>>>>Updating Program Buttons", OBS, programButtons)
+	console.log(">>>>>>>>>>>>>>>Updating Program Buttons", OBS, programButtons)
 	programButtons.forEach((b) => {
 		buttons[b].setProgram()
 	})
@@ -397,7 +427,7 @@ function updateProgramButtons() {
 
 function updatePreviewButtons() {
 	previewButtons = findButtonsByScene(OBS.preview.sceneName)
-	// console.log(">>>>>>>>>>>>>>>>Updating Preview Buttons", OBS, previewButtons)
+	console.log(">>>>>>>>>>>>>>>>Updating Preview Buttons", OBS, previewButtons)
 	previewButtons.forEach(b => {
 		buttons[b].setPreview()
 	})
