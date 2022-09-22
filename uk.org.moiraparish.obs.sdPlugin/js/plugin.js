@@ -350,8 +350,6 @@ function handleProgramSceneChanged(e) {
 			button = buttons[OBS.program.next.button]
 			console.log("pi_Payload:", button.pi_payload, "type:", buttons.type)
 			if (button.type == 'slide') {
-				// TODO Update other slides to match this - loop thru all slide buttons and update.
-				// Copy Base Scene to OBS.
 				OBS.program.baseScene = button.pi_payload.baseScene
 			}
 		}
@@ -377,22 +375,19 @@ function handlePreviewSceneChanged(e) {
 	if (_preview != OBS.preview.sceneName) {
 		console.log("_preview:", _preview, "sceneName:", OBS.preview.sceneName )
 		let button = {}
-		if (OBS.preview.next.button) {
-			button = buttons[OBS.preview.next.button]
-			console.log("pi_Payload:", button.pi_payload, "type:", button.type)
-			if (button.type == 'slide') {
-				// TODO Update other slides to match this - loop thru all slide buttons and update.
-
-				// Copy Base Scene to Preview.
-				OBS.preview.baseScene = button.pi_payload.baseScene
-
-			}
-		}
 		OBS.preview.sceneName = _preview
 		// Save the preview sources
 		OBS.preview.sources = obsGetSceneSources(_preview)
 		OBS.preview.camera = obsGetSceneCamera(_preview)
 		console.log("Preview Scene Change - Updated OBS to", OBS)
+		if (OBS.preview.next.button) {
+			button = buttons[OBS.preview.next.button]
+			console.log("pi_Payload:", button.pi_payload, "type:", button.type)
+			if (button.type == 'slide') {
+				armSlides(button.pi_payload.currentScene, OBS.preview.camera)
+				OBS.preview.baseScene = button.pi_payload.baseScene
+			}
+		}
 		updateButtons()
 	}
 	console.log("handlePreviewSceneChanged: After Preview Scene Change - OBS is", OBS)
@@ -415,8 +410,9 @@ function clearPreviewButtons() {
 }
 
 function updateProgramButtons() {
-	programButtons = findButtonsByScene(OBS.program.sceneName)
-	console.log(">>>>>>>>>>>>>>>Updating Program Buttons", OBS, programButtons)
+	let programButtons = []
+	programButtons = findButtonsByScene(OBS.program.sceneName, OBS.program.sources)
+	console.log(">>>>>>>>>>>>>>>Updating Program Buttons", OBS, "Buttons", programButtons)
 	programButtons.forEach((b) => {
 		buttons[b].setProgram()
 	})
@@ -426,8 +422,9 @@ function updateProgramButtons() {
 }
 
 function updatePreviewButtons() {
-	previewButtons = findButtonsByScene(OBS.preview.sceneName)
-	console.log(">>>>>>>>>>>>>>>>Updating Preview Buttons", OBS, previewButtons)
+	let previewButtons = []
+	previewButtons = findButtonsByScene(OBS.preview.sceneName, OBS.preview.sources)
+	console.log(">>>>>>>>>>>>>>>>Updating Preview Buttons", OBS, "Buttons", previewButtons)
 	previewButtons.forEach(b => {
 		buttons[b].setPreview()
 	})
@@ -437,15 +434,17 @@ function updatePreviewButtons() {
 }
 
 function clearRestOfButtons() {
+	let previewButtons = []
+	let programButtons = []
 	programButtons = findButtonsByScene(OBS.program.sceneName, OBS.program.sources)
 	previewButtons = findButtonsByScene(OBS.preview.sceneName, OBS.preview.sources)
 	Object.keys(buttons).forEach((b) => {
 		if (programButtons.includes(b)) {
-			// console.log("Ignoring program button", b)
+			console.log("Ignoring program button", b)
 		} else if (previewButtons.includes(b)) {
-			// console.log("Ignoring preview button", b)
+			console.log("Ignoring preview button", b)
 		} else {
-			// console.log("setting button off air", b)
+			console.log("setting button off air", b)
 			buttons[b].setOffAir()
 		}
 	})
@@ -461,6 +460,27 @@ function updateButtons() {
 
 }
 
+function armSlides(previewSlideScene, baseCamera) {
+	console.log("Arm Slides", "prev slide:", previewSlideScene, "baseCam:", baseCamera)
+	Object.keys(buttons).forEach((b) => {
+		if (buttons[b].type == 'slide' && buttons[b].pi_payload.currentScene != previewSlideScene) {
+			console.log("Working on button", buttons[b])
+			slideScene = ''
+			let curSc = {}
+			for (curSc of buttons[b].pi_payload.currentScenes) {
+				console.log("Scene:", curSc.slideScene, "Camera", curSc.camera)
+				if (baseCamera == curSc.camera) {
+					slideScene = curSc.slideScene
+				}
+			}
+			buttons[b].pi_payload.currentScene = slideScene
+			buttons[b].pi_payload.currentSource = baseCamera
+			console.log("Arm Slides - slideScene", slideScene, buttons[b])
+		}
+	})
+}
+
+
 function updateButton(context) {
 	// console.log("UpdateButton", context)
 	if (buttons[context].pi_payload.currentScene == OBS.program.sceneName) {
@@ -473,10 +493,9 @@ function updateButton(context) {
 }
 
 function findButtonsByScene(scene, source_list) {
-	// console.log("findButtonsByScene", scene, source_list)
+	console.log("findButtonsByScene", scene, source_list)
 	let output = []
 	Object.keys(buttons).forEach((b) => {
-		// TODO - need to fiddle currentScene here too.....
 		if (buttons[b].pi_payload.currentScene && buttons[b].pi_payload.currentScene == scene) {
 			output.push(b)
 		} else if (source_list && source_list.includes(buttons[b].pi_payload.currentSource)) {
