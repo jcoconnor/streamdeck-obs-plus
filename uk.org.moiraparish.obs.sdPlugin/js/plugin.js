@@ -437,8 +437,8 @@ function clearRestOfButtons() {
 	console.log("clearRestOfButtons Program Buttons")
 	let previewButtons = []
 	let programButtons = []
-	programButtons = findButtonsByScene(OBS.program.sceneName)
-	previewButtons = findButtonsByScene(OBS.preview.sceneName)
+	programButtons = findButtonsByScene(OBS.program.sceneName, OBS.program.sources)
+	previewButtons = findButtonsByScene(OBS.preview.sceneName, OBS.preview.sources)
 	console.log("clearRestOfButtons Program Buttons", programButtons)
 	console.log("clearRestOfButtons Preview Buttons", previewButtons)
 	Object.keys(buttons).forEach((b) => {
@@ -499,13 +499,12 @@ function findButtonsByScene(scene, source_list) {
 	console.log("findButtonsByScene", scene, source_list)
 	let output = []
 	Object.keys(buttons).forEach((b) => {
-		console.log("findButtonsByScene b=", b, "button", button[b])
+		console.log("findButtonsByScene b=", b, "button", buttons[b])
 		if (buttons[b].pi_payload.currentScene && buttons[b].pi_payload.currentScene == scene) {
 			output.push(b)
+		} else if (source_list && source_list.length > 0 && source_list.includes(buttons[b].pi_payload.currentSource)) {
+			output.push(b)
 		}
-		//  else if (source_list && source_list.length > 0 && source_list.includes(buttons[b].pi_payload.currentSource)) {
-		// 	output.push(b)
-		// }
 	})
 	return output
 }
