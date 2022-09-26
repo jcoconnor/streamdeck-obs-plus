@@ -411,7 +411,7 @@ function clearPreviewButtons() {
 
 function updateProgramButtons() {
 	let programButtons = []
-	programButtons = findButtonsByScene(OBS.program.sceneName, OBS.program.sources)
+	programButtons = findButtonsByScene(OBS.program.sceneName)
 	console.log(">>>>>>>>>>>>>>>Updating Program Buttons", OBS, "Buttons", programButtons)
 	programButtons.forEach((b) => {
 		buttons[b].setProgram()
@@ -423,7 +423,7 @@ function updateProgramButtons() {
 
 function updatePreviewButtons() {
 	let previewButtons = []
-	previewButtons = findButtonsByScene(OBS.preview.sceneName, OBS.preview.sources)
+	previewButtons = findButtonsByScene(OBS.preview.sceneName)
 	console.log(">>>>>>>>>>>>>>>>Updating Preview Buttons", OBS, "Buttons", previewButtons)
 	previewButtons.forEach(b => {
 		buttons[b].setPreview()
@@ -434,10 +434,13 @@ function updatePreviewButtons() {
 }
 
 function clearRestOfButtons() {
+	console.log("clearRestOfButtons Program Buttons")
 	let previewButtons = []
 	let programButtons = []
-	programButtons = findButtonsByScene(OBS.program.sceneName, OBS.program.sources)
-	previewButtons = findButtonsByScene(OBS.preview.sceneName, OBS.preview.sources)
+	programButtons = findButtonsByScene(OBS.program.sceneName)
+	previewButtons = findButtonsByScene(OBS.preview.sceneName)
+	console.log("clearRestOfButtons Program Buttons", programButtons)
+	console.log("clearRestOfButtons Preview Buttons", previewButtons)
 	Object.keys(buttons).forEach((b) => {
 		if (programButtons.includes(b)) {
 			console.log("Ignoring program button", b)
@@ -496,11 +499,13 @@ function findButtonsByScene(scene, source_list) {
 	console.log("findButtonsByScene", scene, source_list)
 	let output = []
 	Object.keys(buttons).forEach((b) => {
+		console.log("findButtonsByScene b=", b, "button", button[b])
 		if (buttons[b].pi_payload.currentScene && buttons[b].pi_payload.currentScene == scene) {
 			output.push(b)
-		} else if (source_list && source_list.includes(buttons[b].pi_payload.currentSource)) {
-			output.push(b)
 		}
+		//  else if (source_list && source_list.length > 0 && source_list.includes(buttons[b].pi_payload.currentSource)) {
+		// 	output.push(b)
+		// }
 	})
 	return output
 }
