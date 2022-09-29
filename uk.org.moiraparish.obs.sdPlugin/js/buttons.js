@@ -223,7 +223,7 @@ class Button {
 	}
 
 	setSourcePreview() {
-		if (this.type == 'scene') {
+		if (this.type != '') {
 			console.log("setSourcePreview", this)
 			this._setState(keySourcePreview)
 			this.state = keySourcePreview
@@ -236,7 +236,7 @@ class Button {
 	}
 
 	setSourceProgram() {
-		if (this.type == 'scene') {
+		if (this.type != '') {
 			console.log("setSourceProgram", this)
 			this._setState(keySourceLive)
 			this.setOnline()
