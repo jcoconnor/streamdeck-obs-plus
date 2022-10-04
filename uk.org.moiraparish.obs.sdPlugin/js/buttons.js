@@ -40,7 +40,7 @@ class Button {
 		console.log("Working on Key Down", this)
 		switch (this.type) {
 			case 'scene':
-				console.log("Key down here Scene:", this.pi_payload.currentScene, "coords", this.coordinates.column, this.coordinates.row, "source", this.pi_payload.currentSource, "state", this.state, this)
+				console.log("Key down here Scene:", this.pi_payload.currentScene, "OBS", OBS, "coords", this.coordinates.column, this.coordinates.row, "source", this.pi_payload.currentSource, "state", this.state, this)
 				switch (this.state) {
 					case keyInactive:
 						this._Preview()
@@ -53,14 +53,14 @@ class Button {
 						break
 					case keySourceLive:
 						// Check for overlay - otherwise
-						if (false) {   // TODO - Check if we can use this one....
+						if (OBS.program.current.type == 'slide' && OBS.program.baseScene == this.pi_payload.currentScene) {
 							this._LiveOutput()
 						} else {
 							StreamDeck.sendAlert(this.context)
 						}
 						break
 					case keyLiveOutput:
-						if (false) {    // TODO - Check if this preset is live.
+						if (OBS.program.current.type == 'slide' && OBS.program.baseScene == this.pi_payload.currentScene) {
 							this._LiveOutput()
 						} else {
 							StreamDeck.sendAlert(this.context)
@@ -69,7 +69,7 @@ class Button {
 				}
 				break
 			case 'slide':
-				console.log("Key down here Slide:", this.pi_payload.currentScene, "coords", this.coordinates.column, this.coordinates.row,  "state", this.state, this)
+				console.log("Key down here Slide:", this.pi_payload.currentScene, "OBS", OBS, "coords", this.coordinates.column, this.coordinates.row,  "state", this.state, this)
 				switch (this.state) {
 					case keyInactive:
 						this._PreviewSlide()
@@ -81,13 +81,13 @@ class Button {
 						/*
 						   Setup preview on this if we are matching the grouping scene ?
 						*/
-						StreamDeck.sendAlert(this.context)
+						this._Preview()
 						break
 					case keySourceLive:
 						/*
 						   Transition to this if we are matching the grouping scene ?
 						*/
-						StreamDeck.sendAlert(this.context)
+						this._LiveOutput()
 						break
 					case keyLiveOutput:
 						/*
@@ -107,6 +107,7 @@ class Button {
 			console.log("Setting Scene to: ", this.pi_payload.currentScene)
 			OBS.preview.next.button = this.context
 			OBS.preview.next.type = this.type
+			// disarmSlides() - to heavy here - put it into post-preview work instead.
 			obs.send('SetPreviewScene', {
 				'scene-name': this.pi_payload.currentScene
 			})
@@ -186,8 +187,8 @@ class Button {
 			// Overlay test maybe ??
 		} else {
 			console.log("Starting Scene transition to program")
-			OBS.preview.next.button = this.context
-			OBS.preview.next.type = this.type
+			OBS.program.next.button = this.context
+			OBS.program.next.type = this.type
 			obs.send('TransitionToProgram')
 		}
 		console.log("Checking button state", this)

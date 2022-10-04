@@ -45,6 +45,7 @@ let OBS = {
 			type: ''
 		},
 		baseScene: '',
+		slideScene: '',
 		sources: []
 	},
 	preview: {
@@ -59,6 +60,7 @@ let OBS = {
 			type: ''
 		},
 		baseScene: '',
+		slideScene: '',
 		sources: []
 	}
 }
@@ -340,7 +342,8 @@ function handleProgramSceneChanged(e) {
 	let _program = ''
 	if (e['scene-name']) _program = e['scene-name']
 	if (e['name']) _program = e['name']
-	OBS.program.baseScene = ''
+	// TODO - is this correct or do we need to lock it ?
+	// OBS.program.baseScene = ''
 
 	if (_program != OBS.program.sceneName) {
 		console.log("_program:", _program, "sceneName:", OBS.program.sceneName )
@@ -483,6 +486,23 @@ function armSlides(previewSlideScene, baseCamera) {
 	})
 }
 
+function disarmSlides() {
+	// Disarm slides completely - clear all slide buttons and flags.
+
+	console.log("Disarming Slides")
+
+	Object.keys(buttons).forEach((b) => {
+		if (buttons[b].type == 'slide' ) {
+			console.log("Working on button", buttons[b])
+			slideScene = ''
+			let curSc = {}
+			buttons[b].pi_payload.currentScene = ''
+			buttons[b].pi_payload.currentSource = ''
+			console.log("Disarm Slides - slideScene", slideScene, buttons[b])
+		}
+	})
+
+}
 
 function updateButton(context) {
 	// console.log("UpdateButton", context)
