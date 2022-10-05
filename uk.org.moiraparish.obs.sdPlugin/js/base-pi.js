@@ -15,7 +15,7 @@ let pi_payload = {
 	 		camera: ''
 		}
 	],
-	baseScene: '',            // Base scene - Scene that fired off this slide selection
+	slideBaseScene: '',            // Base scene - Scene that fired off this slide selection
     currentSceneGrouping: '', // Grouping scene - Common scene group for slide scene selections
     currentButtonImage: '',
     currentButtonImageContents: []

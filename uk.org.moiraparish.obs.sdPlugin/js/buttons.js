@@ -53,14 +53,14 @@ class Button {
 						break
 					case keySourceLive:
 						// Check for overlay - otherwise
-						if (OBS.program.current.type == 'slide' && OBS.program.baseScene == this.pi_payload.currentScene) {
+						if (OBS.program.current.type == 'slide' && OBS.program.slideBaseScene == this.pi_payload.currentScene) {
 							this._LiveOutput()
 						} else {
 							StreamDeck.sendAlert(this.context)
 						}
 						break
 					case keyLiveOutput:
-						if (OBS.program.current.type == 'slide' && OBS.program.baseScene == this.pi_payload.currentScene) {
+						if (OBS.program.current.type == 'slide' && OBS.program.slideBaseScene == this.pi_payload.currentScene) {
 							this._LiveOutput()
 						} else {
 							StreamDeck.sendAlert(this.context)
@@ -128,17 +128,17 @@ class Button {
 
 		console.log("Checking scene grouping against grouping:", this.pi_payload.currentSceneGrouping, "OBS Object", OBS)
 
-		let baseScene = ''
+		let slideBaseScene = ''
 		let baseCamera = ''
 		let slideScene = ''
 
 		if (OBS.program.sources.includes(this.pi_payload.currentSceneGrouping)) {
 			console.log("We have a program match", OBS)
-			baseScene = OBS.program.sceneName
+			slideBaseScene = OBS.program.sceneName
 			baseCamera = OBS.program.camera
 		} else if (OBS.preview.sources.includes(this.pi_payload.currentSceneGrouping)) {
 			console.log("We have a preview match", OBS)
-			baseScene = OBS.preview.sceneName
+			slideBaseScene = OBS.preview.sceneName
 			baseCamera = OBS.preview.camera
 		} else {
 			console.log("We have a NO MATCH")
@@ -154,7 +154,7 @@ class Button {
 				slideScene = curSc.slideScene
 			}
 		}
-		console.log("baseScene:", baseScene, " Camera:", baseCamera, " Slide Scene is:", slideScene)
+		console.log("slideBaseScene:", slideBaseScene, " Camera:", baseCamera, " Slide Scene is:", slideScene)
 
 		if (slideScene == '') {
 			console.log("No slide scene match")
@@ -168,7 +168,7 @@ class Button {
 
 			console.log("Setting Scene to: ", slideScene)
 			this.pi_payload.currentScene = slideScene
-			this.pi_payload.baseScene = baseScene
+			this.pi_payload.slideBaseScene = slideBaseScene
 			OBS.preview.next.button = this.context
 			OBS.preview.next.type = this.type
 			this._setState(keyPreview)

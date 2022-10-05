@@ -44,8 +44,7 @@ let OBS = {
 			button: '',
 			type: ''
 		},
-		baseScene: '',
-		slideScene: '',
+		slideBaseScene: '',
 		sources: []
 	},
 	preview: {
@@ -59,8 +58,7 @@ let OBS = {
 			button: '',
 			type: ''
 		},
-		baseScene: '',
-		slideScene: '',
+		slideBaseScene: '',
 		sources: []
 	}
 }
@@ -207,9 +205,40 @@ function obsGetSceneCamera(scene_name) {
 
 
 function obsUpdateStudioStatus() {
+
+	// Populate the OBS Structure with the current OBS scenes.
+
 	obs.send('GetStudioModeStatus').then((data) => {
 		OBS.studioMode = data['studio-mode']
 	})
+
+	obs.send('GetCurrentScene').then((data) => {
+		let scenelist = []
+		OBS.program.sceneName = data['name']
+		scenelist = data['sources']
+		console.log("obsUpdateStudioStatus", OBS.program.sceneName, scenelist)
+		for (sc of scenelist) {
+			OBS.program.sources.push(sc.name)
+			if (sc.type == "ndi_source") {
+				OBS.program.camera = sc.name
+			}
+		}
+	})
+
+	obs.send('GetPreviewScene').then((data) => {
+		let scenelist = []
+		OBS.preview.sceneName = data['name']
+		scenelist = data['sources']
+		console.log("obsUpdateStudioStatus", OBS.preview.sceneName, scenelist)
+		for (sc of scenelist) {
+			OBS.preview.sources.push(sc.name)
+			if (sc.type == "ndi_source") {
+				OBS.preview.camera = sc.name
+			}
+		}
+	})
+	console.log("obsUpdateStudioStatus", OBS)
+
 }
 
 function updatePI(e) {
@@ -343,7 +372,7 @@ function handleProgramSceneChanged(e) {
 	if (e['scene-name']) _program = e['scene-name']
 	if (e['name']) _program = e['name']
 	// TODO - is this correct or do we need to lock it ?
-	// OBS.program.baseScene = ''
+	// OBS.program.slideBaseScene = ''
 
 	if (_program != OBS.program.sceneName) {
 		console.log("_program:", _program, "sceneName:", OBS.program.sceneName )
@@ -353,7 +382,7 @@ function handleProgramSceneChanged(e) {
 			button = buttons[OBS.program.next.button]
 			console.log("pi_Payload:", button.pi_payload, "type:", buttons.type)
 			if (button.type == 'slide') {
-				OBS.program.baseScene = button.pi_payload.baseScene
+				OBS.program.slideBaseScene = button.pi_payload.slideBaseScene
 			}
 		}
 
@@ -373,7 +402,7 @@ function handlePreviewSceneChanged(e) {
 	let _preview = ''
 	if (e['scene-name']) _preview = e['scene-name']
 	if (e['name']) _preview = e['name']
-	OBS.preview.baseScene = ''
+	// OBS.preview.slideBaseScene = ''
 
 	if (_preview != OBS.preview.sceneName) {
 		console.log("_preview:", _preview, "sceneName:", OBS.preview.sceneName )
@@ -388,7 +417,7 @@ function handlePreviewSceneChanged(e) {
 			console.log("pi_Payload:", button.pi_payload, "type:", button.type)
 			if (button.type == 'slide') {
 				armSlides(button.pi_payload.currentScene, OBS.preview.camera)
-				OBS.preview.baseScene = button.pi_payload.baseScene
+				OBS.preview.slideBaseScene = button.pi_payload.slideBaseScene
 			}
 		}
 		updateButtons()
@@ -486,16 +515,16 @@ function armSlides(previewSlideScene, baseCamera) {
 	})
 }
 
-function disarmSlides() {
+function disarmSlides(all) {
 	// Disarm slides completely - clear all slide buttons and flags.
 
-	console.log("Disarming Slides")
+	console.log("Disarming Slides", all)
 
 	Object.keys(buttons).forEach((b) => {
 		if (buttons[b].type == 'slide' ) {
+			// Test for live slide......
 			console.log("Working on button", buttons[b])
 			slideScene = ''
-			let curSc = {}
 			buttons[b].pi_payload.currentScene = ''
 			buttons[b].pi_payload.currentSource = ''
 			console.log("Disarm Slides - slideScene", slideScene, buttons[b])
