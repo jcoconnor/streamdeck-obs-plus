@@ -371,26 +371,33 @@ function handleProgramSceneChanged(e) {
 	let _program = ''
 	if (e['scene-name']) _program = e['scene-name']
 	if (e['name']) _program = e['name']
-	// TODO - is this correct or do we need to lock it ?
-	// OBS.program.slideBaseScene = ''
 
 	if (_program != OBS.program.sceneName) {
-		console.log("_program:", _program, "sceneName:", OBS.program.sceneName )
+		console.log("handleProgramSceneChanged: _program:", _program, "sceneName:", OBS.program.sceneName )
 		let button = {}
 		OBS.program.sceneName = _program
 		if (OBS.program.next.button) {
 			button = buttons[OBS.program.next.button]
-			console.log("pi_Payload:", button.pi_payload, "type:", buttons.type)
+			console.log("handleProgramSceneChanged: pi_Payload:", button.pi_payload, "type:", button.type)
 			if (button.type == 'slide') {
+				console.log("handleProgramSceneChanged: Setting Base slide scene and arming slides", button.pi_payload.slideBaseScene)
+				armSlides(button.pi_payload.currentScene, OBS.program.camera, button.pi_payload.slideBaseScene)
 				OBS.program.slideBaseScene = button.pi_payload.slideBaseScene
+				if (OBS.program.slideBaseScene == "") console.log("handleProgramSceneChanged: Warning - EMPTY slideBaseScene")
+				console.log("handleProgramSceneChanged: OBS is", OBS)
+			} else if (_program != OBS.program.slideBaseScene) {
+				console.log("handleProgramSceneChanged: Clearing SlideBaseScene", _program, OBS)
+				OBS.program.slideBaseScene = ''
 			}
 		}
 
 		// Save the program sources
 		OBS.program.sources = obsGetSceneSources(_program)
 		OBS.program.camera = obsGetSceneCamera(_program)
-		console.log("Program Scene Change - Updated OBS to", OBS)
+		console.log("handleProgramSceneChanged: Program Scene Change - Updated OBS to", OBS)
 		updateButtons()
+	} else {
+		console.log("handleProgramSceneChanged: Program same - no change")
 	}
 	console.log("handleProgramSceneChanged: After Program Scene Change - OBS is", OBS)
 }
@@ -402,25 +409,32 @@ function handlePreviewSceneChanged(e) {
 	let _preview = ''
 	if (e['scene-name']) _preview = e['scene-name']
 	if (e['name']) _preview = e['name']
-	// OBS.preview.slideBaseScene = ''
 
 	if (_preview != OBS.preview.sceneName) {
-		console.log("_preview:", _preview, "sceneName:", OBS.preview.sceneName )
+		console.log("handlePreviewSceneChanged: _preview:", _preview, "sceneName:", OBS.preview.sceneName )
 		let button = {}
 		OBS.preview.sceneName = _preview
 		// Save the preview sources
 		OBS.preview.sources = obsGetSceneSources(_preview)
 		OBS.preview.camera = obsGetSceneCamera(_preview)
-		console.log("Preview Scene Change - Updated OBS to", OBS)
+		console.log("handlePreviewSceneChanged: Preview Scene Change - Updated OBS to", OBS)
 		if (OBS.preview.next.button) {
 			button = buttons[OBS.preview.next.button]
-			console.log("pi_Payload:", button.pi_payload, "type:", button.type)
+			console.log("handlePreviewSceneChanged: pi_Payload:", button.pi_payload, "type:", button.type)
 			if (button.type == 'slide') {
-				armSlides(button.pi_payload.currentScene, OBS.preview.camera)
+				console.log("handlePreviewSceneChanged: Setting Base slide scene and arming slides", button.pi_payload.slideBaseScene)
+				armSlides(button.pi_payload.currentScene, OBS.preview.camera, button.pi_payload.slideBaseScene)
 				OBS.preview.slideBaseScene = button.pi_payload.slideBaseScene
-			}
+				if (OBS.preview.slideBaseScene == "") console.log("handlePreviewSceneChanged: Warning - EMPTY slideBaseScene")
+				console.log("handlePreviewSceneChanged: OBS is", OBS)
+			} 
+		} else if (_preview != OBS.preview.slideBaseScene) {
+			console.log("handlePreviewSceneChanged: Clearing SlideBaseScene", _preview, OBS)
+			OBS.preview.slideBaseScene = ''
 		}
 		updateButtons()
+	} else {
+		console.log("handlePreviewSceneChanged: Preview same - no change")
 	}
 	console.log("handlePreviewSceneChanged: After Preview Scene Change - OBS is", OBS)
 }
@@ -495,7 +509,7 @@ function updateButtons() {
 
 }
 
-function armSlides(previewSlideScene, baseCamera) {
+function armSlides(previewSlideScene, baseCamera, slideBaseScene) {
 	console.log("Arm Slides", "prev slide:", previewSlideScene, "baseCam:", baseCamera)
 	Object.keys(buttons).forEach((b) => {
 		if (buttons[b].type == 'slide' && buttons[b].pi_payload.currentScene != previewSlideScene) {
@@ -510,6 +524,7 @@ function armSlides(previewSlideScene, baseCamera) {
 			}
 			buttons[b].pi_payload.currentScene = slideScene
 			buttons[b].pi_payload.currentSource = baseCamera
+			buttons[b].pi_payload.slideBaseScene = slideBaseScene
 			console.log("Arm Slides - slideScene", slideScene, buttons[b])
 		}
 	})
