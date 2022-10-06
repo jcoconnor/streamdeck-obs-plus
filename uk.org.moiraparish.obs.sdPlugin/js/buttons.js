@@ -54,14 +54,14 @@ class Button {
 					case keySourceLive:
 						// Check for overlay - otherwise
 						if (OBS.program.current.type == 'slide' && OBS.program.slideBaseScene == this.pi_payload.currentScene) {
-							this._LiveOutput()
+							this._LiveOutputSlide()
 						} else {
 							StreamDeck.sendAlert(this.context)
 						}
 						break
 					case keyLiveOutput:
 						if (OBS.program.current.type == 'slide' && OBS.program.slideBaseScene == this.pi_payload.currentScene) {
-							this._LiveOutput()
+							this._LiveOutputSlide()
 						} else {
 							StreamDeck.sendAlert(this.context)
 						}
@@ -87,7 +87,7 @@ class Button {
 						/*
 						   Transition to this if we are matching the grouping scene ?
 						*/
-						this._LiveOutput()
+						this._LiveOutputSlide()
 						break
 					case keyLiveOutput:
 						/*
@@ -183,19 +183,27 @@ class Button {
 	_LiveOutput() {
 		StreamDeck.sendOk(this.context)
 		
-		if (false) {
-			// Overlay test maybe ??
-		} else {
-			console.log("Starting Scene transition to program")
-			OBS.program.next.button = this.context
-			OBS.program.next.type = this.type
-			obs.send('TransitionToProgram')
-		}
+		console.log("Starting Scene transition to program")
+		OBS.program.next.button = this.context
+		OBS.program.next.type = this.type
+		obs.send('TransitionToProgram')
+
 		console.log("Checking button state", this)
 		this._setState(keySourceLive)
 	}
 
 	_LiveOutputSlide() {
+		StreamDeck.sendOk(this.context)
+
+		console.log("Starting Scene transition to program")
+		OBS.program.next.button = this.context
+		OBS.program.next.type = this.type
+		obs.send('SetCurrentScene', {
+			'scene-name': this.pi_payload.currentScene
+		})
+
+		console.log("Checking button state", this)
+		this._setState(keySourceLive)
 	}
 
 	_updateTitle() {
