@@ -4,6 +4,8 @@ const keySourcePreview = 3
 const keySourceLive = 4
 const keyLiveOutput = 5
 const keySlidePreview = 6
+const keyNewSlideBaseScene = 7
+
 
 let lower_bar = ""
 let main_box = ""
@@ -44,7 +46,14 @@ class Button {
 				console.log("Key down here Scene:", this.pi_payload.currentScene, "OBS", OBS, "coords", this.coordinates.column, this.coordinates.row, "source", this.pi_payload.currentSource, "state", this.state, this)
 				switch (this.state) {
 					case keyInactive:
-						this._Preview()
+						if (OBS.current.slideBaseScene != "") {
+							this._NewSlideBaseScene()
+						} else {
+							this._Preview()
+						}
+						break
+					case keyNewSlideBaseScene:
+						this._ClearSlidesAndLive()
 						break
 					case keyPreview:
 						this._LiveOutput()
@@ -171,6 +180,28 @@ class Button {
 		}
 	}
 
+	_NewSlideBaseScene () {
+		// New Preview test when slide scene is active.
+
+		// Test to see if our scene is valid for slide scene.
+		// I.e. does it contain the Grouping scene in the current slide active.
+		// So check OBS.Program - for Grouping Scene - if there is one on the button.
+		// What about if the slide sequence is active, and we are live on the main camera - then just cancel completely ?
+		// We can do that by checking current type.......
+		// if fail - just alarm then - and ignore.
+		// Actually - that won't work - just go full program preview there and cancel slides.
+		// 
+
+
+	}
+
+
+	_ClearSlidesAndLive() {
+		// TODO - Disarm slides
+		disarmSlides()
+		this._LiveOutput()
+	}
+
 	_LiveOutput() {
 		StreamDeck.sendOk(this.context)
 		
@@ -212,7 +243,6 @@ class Button {
 				this._setState(keySlidePreview)
 				break;
 		}
-		// TODO - should be next types here - not current - that's the handler's job to switch over.
 		OBS.preview.current.type = this.type
 		OBS.preview.current.button = this.context
 		this.setOnline()
@@ -324,16 +354,23 @@ class Button {
 				lower_bar = green
 				break
 			case keySourceLive:
+				if (this.pi_payload.currentScene == OBS.program.slideBaseScene) {
+					circle_col = yellow
+				} 
 				lower_bar = red
 				break
 			case keyLiveOutput:
-				main_box = red
 				circle_col = red
+				main_box = red
 				break
 			case keySlidePreview:
 				lower_bar = red
 				circle_col = yellow
 				break;
+			case keyNewSlideBaseScene:
+				main_box = green
+				circle_col = yellow
+				break
 		}
 		console.log("***** SetOnline Scene:", this.pi_payload.currentScene, 
 					"coords", this.coordinates.column, this.coordinates.row, 

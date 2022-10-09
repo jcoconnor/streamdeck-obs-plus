@@ -544,6 +544,7 @@ function disarmSlides(all) {
 			buttons[b].pi_payload.currentSource = ''
 			console.log("Disarm Slides - slideScene", slideScene, buttons[b])
 		}
+		// TODO - Clear live OBS markers as well.
 	})
 
 }
