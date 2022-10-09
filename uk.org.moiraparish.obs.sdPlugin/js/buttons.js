@@ -3,6 +3,7 @@ const keyPreview = 1
 const keySourcePreview = 3
 const keySourceLive = 4
 const keyLiveOutput = 5
+const keySlidePreview = 6
 
 let lower_bar = ""
 let main_box = ""
@@ -74,25 +75,15 @@ class Button {
 					case keyInactive:
 						this._PreviewSlide()
 						break
-					case keyPreview:
-						this._LiveOutput()
-						break
-					case keySourcePreview: 
-						/*
-						   Setup preview on this if we are matching the grouping scene ?
-						*/
-						this._Preview()
-						break
-					case keySourceLive:
-						/*
-						   Transition to this if we are matching the grouping scene ?
-						*/
+					case keySlidePreview:
 						this._LiveOutputSlide()
 						break
+
+					// Remainder of these should just trigger an alarm.
+					case keyPreview:
+					case keySourcePreview: 
+					case keySourceLive:
 					case keyLiveOutput:
-						/*
-						   Straight alert - we don't need to do anymore here.
-						*/
 						StreamDeck.sendAlert(this.context)
 						break
 				}
@@ -171,7 +162,7 @@ class Button {
 			this.pi_payload.slideBaseScene = slideBaseScene
 			OBS.preview.next.button = this.context
 			OBS.preview.next.type = this.type
-			this._setState(keyPreview)
+			// this._setState(keySlidePreview)
 			obs.send('SetPreviewScene', {
 				'scene-name': slideScene
 			})
@@ -212,14 +203,20 @@ class Button {
 
 	setPreview() {
 		// Add detection here for primed/no primed
-		if (this.type != '' ) {
-			console.log("setPreview", this)
-			this._setState(keyPreview)
-			OBS.preview.current.type = this.type
-			OBS.preview.current.button = this.context
-			this.setOnline()
+		console.log("setPreview", this)
+		switch (this.type) {
+			case 'scene':
+				this._setState(keyPreview)
+				break
+			case 'slide':
+				this._setState(keySlidePreview)
+				break;
 		}
-	}
+		// TODO - should be next types here - not current - that's the handler's job to switch over.
+		OBS.preview.current.type = this.type
+		OBS.preview.current.button = this.context
+		this.setOnline()
+}
 
 	setProgram() {
 		if (this.type != '' ) {
@@ -245,11 +242,16 @@ class Button {
 	}
 
 	setSourceProgram() {
-		if (this.type != '') {
-			console.log("setSourceProgram", this)
-			this._setState(keySourceLive)
-			this.setOnline()
+		console.log("setSourceProgram", this)
+		switch (this.type) {
+			case 'scene':
+				this._setState(keySourceLive)
+				break
+			case 'slide':
+				this._setState(keySlidePreview)
+				break;
 		}
+		this.setOnline()
 	}
 
 	setOffAir() {
@@ -269,6 +271,7 @@ class Button {
 	setOnline() {
 		console.log("setOnline Scene:", this.pi_payload.currentScene, "coords", this.coordinates.column, this.coordinates.row, "type", this.type, "source", this.pi_payload.currentSource, "state", this.state, this)
 
+		// TODO - remove duplicates....
 		switch (this.type) {
 			case 'scene':
 				var canvas = document.getElementById('canvas')
@@ -327,6 +330,10 @@ class Button {
 				main_box = red
 				circle_col = red
 				break
+			case keySlidePreview:
+				lower_bar = red
+				circle_col = yellow
+				break;
 		}
 		console.log("***** SetOnline Scene:", this.pi_payload.currentScene, 
 					"coords", this.coordinates.column, this.coordinates.row, 
