@@ -439,6 +439,16 @@ function handlePreviewSceneChanged(e) {
 	console.log("handlePreviewSceneChanged: After Preview Scene Change - OBS is", OBS)
 }
 
+function handleNewSlideBaseScene(button) {
+	console.log("handleNewSlideBaseScene: Actions here please", button)
+	Object.keys(buttons).forEach((b) => {
+		if (buttons[b].state == keyNewSlideBaseScene) buttons[b].state = keyInactive
+	})
+	button.setNewSlideBaseScene()
+	updateButtons()
+}
+
+
 function handleStudioModeSwitched(e) {
 	console.log("handleStudioModeSwitched e", e)
 	OBS.studioMode = e['new-state']
@@ -492,6 +502,8 @@ function clearRestOfButtons() {
 			console.log("Ignoring program button", b)
 		} else if (previewButtons.includes(b)) {
 			console.log("Ignoring preview button", b)
+		} else if (buttons[b].state == keyNewSlideBaseScene) {
+			console.log("Ignoring NewSlideBaseScene button", b)
 		} else {
 			console.log("setting button off air", b)
 			buttons[b].setOffAir()
@@ -550,11 +562,13 @@ function disarmSlides(all) {
 }
 
 function updateButton(context) {
-	// console.log("UpdateButton", context)
+	console.log("UpdateButton", context)
 	if (buttons[context].pi_payload.currentScene == OBS.program.sceneName) {
 		buttons[context].setProgram()
 	} else if (buttons[context].pi_payload.currentScene == OBS.preview.sceneName) {
 		buttons[context].setPreview()
+	} else if (buttons[context].state == keyNewSlideBaseScene) {
+		buttons[context].setNewSlideBaseScene()
 	} else {
 		buttons[context].setOffAir()
 	}

@@ -46,7 +46,7 @@ class Button {
 				console.log("Key down here Scene:", this.pi_payload.currentScene, "OBS", OBS, "coords", this.coordinates.column, this.coordinates.row, "source", this.pi_payload.currentSource, "state", this.state, this)
 				switch (this.state) {
 					case keyInactive:
-						if (OBS.current.slideBaseScene != "") {
+						if (OBS.program.slideBaseScene != "") {
 							this._NewSlideBaseScene()
 						} else {
 							this._Preview()
@@ -101,7 +101,6 @@ class Button {
 	}
 
 	_Preview() {
-		// TODO - Removed check on included scene
 		StreamDeck.sendOk(this.context)
 		if (this.pi_payload.currentScene != OBS.preview.sceneName) {
 			console.log("Setting Scene to: ", this.pi_payload.currentScene)
@@ -183,6 +182,11 @@ class Button {
 	_NewSlideBaseScene () {
 		// New Preview test when slide scene is active.
 
+		console.log("_NewSlideBaseScene", this)
+		StreamDeck.sendOk(this.context)
+
+		// TODO - Need to actually setup preview for this - align it up and ready for preview.
+
 		// Test to see if our scene is valid for slide scene.
 		// I.e. does it contain the Grouping scene in the current slide active.
 		// So check OBS.Program - for Grouping Scene - if there is one on the button.
@@ -192,13 +196,15 @@ class Button {
 		// Actually - that won't work - just go full program preview there and cancel slides.
 		// 
 
-
+		this._setState(keyNewSlideBaseScene)
+		handleNewSlideBaseScene(this)   // TODO - so maybe this isn't needed
+	
 	}
 
 
 	_ClearSlidesAndLive() {
 		// TODO - Disarm slides
-		disarmSlides()
+		disarmSlides(true)
 		this._LiveOutput()
 	}
 
@@ -281,6 +287,12 @@ class Button {
 				this._setState(keySlidePreview)
 				break;
 		}
+		this.setOnline()
+	}
+
+	setNewSlideBaseScene() {
+		console.log("setNewSlideBaseScene", this)
+		this._setState(keyNewSlideBaseScene)
 		this.setOnline()
 	}
 
