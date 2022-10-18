@@ -102,6 +102,12 @@ class Button {
 
 	_Preview() {
 		StreamDeck.sendOk(this.context)
+		this.setPreviewScene()
+		this._setState(keyPreview)
+	}
+
+
+	setPreviewScene() {
 		if (this.pi_payload.currentScene != OBS.preview.sceneName) {
 			console.log("Setting Scene to: ", this.pi_payload.currentScene)
 			OBS.preview.next.button = this.context
@@ -113,8 +119,9 @@ class Button {
 		} else {
 			console.log("Scene already set no changing")
 		}
-		this._setState(keyPreview)
 	}
+
+
 
 	_PreviewSlide() {
 		/*
@@ -196,21 +203,23 @@ class Button {
 		// Actually - that won't work - just go full program preview there and cancel slides.
 		// 
 
-		this._setState(keyNewSlideBaseScene)
+		this.setPreviewScene()
+		// this._setState(keyNewSlideBaseScene)
 		handleNewSlideBaseScene(this)   // TODO - so maybe this isn't needed
 	
 	}
 
 
 	_ClearSlidesAndLive() {
+		console.log("_ClearSlidesAndLive: this", this)
 		// TODO - Disarm slides
 		disarmSlides(true)
 		this._LiveOutput()
 	}
 
 	_LiveOutput() {
+		console.log("_LiveOutput: this", this)
 		StreamDeck.sendOk(this.context)
-		
 		console.log("Starting Scene transition to program")
 		OBS.program.next.button = this.context
 		OBS.program.next.type = this.type

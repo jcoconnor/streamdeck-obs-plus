@@ -403,6 +403,7 @@ function handleProgramSceneChanged(e) {
 }
 
 function handlePreviewSceneChanged(e) {
+	// TODO - Need to capture state == keyNewSlideBaseScene
 	// NB - think there is an async issue with this dump as it reflects the post change scenario.
 	console.log("handlePreviewSceneChanged: Just before Preview Scene Change - OBS is", OBS)
 	console.log("e is ", e)
@@ -482,7 +483,12 @@ function updatePreviewButtons() {
 	previewButtons = findButtonsByScene(OBS.preview.sceneName)
 	console.log(">>>>>>>>>>>>>>>>Updating Preview Buttons", OBS, "Buttons", previewButtons)
 	previewButtons.forEach(b => {
-		buttons[b].setPreview()
+		// TODO - test for keyNewSlideBaseScene here - 
+		if (buttons[b].state == keyNewSlideBaseScene) {
+			buttons[b].setNewSlideBaseScene()
+		} else {
+			buttons[b].setPreview()
+		}
 	})
 	findButtonsBySource(OBS.preview.sources).forEach(b => {
 		if (!previewButtons.includes(b))  buttons[b].setSourcePreview()
