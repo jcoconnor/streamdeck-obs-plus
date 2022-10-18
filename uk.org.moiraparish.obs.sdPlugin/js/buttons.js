@@ -202,6 +202,9 @@ class Button {
 		// if fail - just alarm then - and ignore.
 		// Actually - that won't work - just go full program preview there and cancel slides.
 		// 
+		// TODO - partially working now.
+		// 1. Need to make sure next p;review if valid is also yellow.
+		// 2. More secure disarming of slides - a bit random here.
 
 		this.setPreviewScene()
 		// this._setState(keyNewSlideBaseScene)
