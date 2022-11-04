@@ -30,6 +30,7 @@ let buttons = {}
 let OBS = {
 	scenes: [
 		{name: "" ,
+		slideGroup: false,
 		sources: []},
 	],
 	studioMode: null,
@@ -135,6 +136,18 @@ obs.on('Exiting', () => {
 
 function obsUpdateScenes() {
 	console.log("Entering obsUpdateScenes")
+	// Pre-Process to get button data if available.
+	let slideGroupScene = ""
+	Object.keys(buttons).forEach((b) => {
+		console.log("Working on Button", buttons[b])
+		if (buttons[b].type == 'slide') {
+			console.log("Found Slide Group Match")
+			slideGroupScene = buttons[b].pi_payload.currentSceneGrouping
+		}
+	})
+	console.log("Slide Group Scene", slideGroupScene)
+
+	// BUild Scene Map
 	let scene_dump = {}
 	obs.send('GetSceneList').then((data) => {
 		scene_dump = data
@@ -143,9 +156,11 @@ function obsUpdateScenes() {
 		OBS.scenes = scene_dump.scenes.map((s) => {
 			// Make an oject here with source name, source_type, and sub-scene as option.
 			let source_list = []
+			let slideGroup = false
 			s.sources.forEach((src) => {
 					source_list.push({'name': src.name, 'type': src.type})
 					if (src.type == "scene") {
+						if (src.name == slideGroupScene) slideGroup = true
 						scene_dump.scenes.forEach((subscene) => {
 							if (subscene.name == src.name) {
 								subscene.sources.forEach((subSrc) => {
@@ -155,7 +170,7 @@ function obsUpdateScenes() {
 						})
 					}
 			})
-			return {"name": s.name, "sources": source_list}
+			return {"name": s.name, "slideGroup": slideGroup,"sources": source_list}
 		})
 	}).then(() => {
 		// Send scene list to Streamdeck as as global setting.
@@ -182,6 +197,23 @@ function obsGetSceneSources(scene_name) {
 	}
 
 	return return_sources
+}
+
+function obsIsSlideGroupScene(scene_name) {
+
+	console.log("obsIsSlideGroupScene", scene_name)
+
+	let returnValue = false
+
+	for (sc of OBS.scenes) {
+		if (sc.name == scene_name) {
+			returnValue = sc.slideGroup
+			break
+		}
+	}
+
+	return returnValue
+
 }
 
 function obsGetSceneCamera(scene_name) {

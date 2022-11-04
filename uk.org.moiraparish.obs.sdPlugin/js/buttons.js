@@ -15,7 +15,6 @@ class Button {
 		this.context = data.context
 		this.coordinates = data.coordinates
 		this.type = type
-		this.slidegroup = false
 		this.state = keyInactive
 		this.processStreamDeckData(data)
 	}
@@ -190,12 +189,19 @@ class Button {
 		// New Preview test when slide scene is active.
 
 		console.log("_NewSlideBaseScene", this)
+		
+		if (!obsIsSlideGroupScene(this.pi_payload.currentScene)) {
+			StreamDeck.sendAlert(this.context)
+			return
+		}
 		StreamDeck.sendOk(this.context)
 
 		// TODO - Need to actually setup preview for this - align it up and ready for preview.
 
+
 		// Test to see if our scene is valid for slide scene.
 		// I.e. does it contain the Grouping scene in the current slide active.
+
 		// So check OBS.Program - for Grouping Scene - if there is one on the button.
 		// What about if the slide sequence is active, and we are live on the main camera - then just cancel completely ?
 		// We can do that by checking current type.......
