@@ -25,7 +25,7 @@ class Button {
 			console.log("Processing Streamdeck Payload ......", data.payload.state, data, OBS)
 			if (data.payload.coordinates) this.coordinates = data.payload.coordinates
 			if (data.payload.settings.pi_payload) this.pi_payload = data.payload.settings.pi_payload
-			console.log ("Payload Processing ........:", this)
+			console.log("Payload Processing ........:", this)
 			switch (this.state) {
 				case keyInactive:
 					this.setOffline()
@@ -57,8 +57,12 @@ class Button {
 					case keyPreview:
 						this._LiveOutput()
 						break
-					case keySourcePreview: 
-						this._Preview()
+					case keySourcePreview:
+						if (OBS.program.slideBaseScene != "") {
+							this._NewSlideBaseScene()
+						} else {
+							this._Preview()
+						}
 						break
 					case keySourceLive:
 						// Check for overlay - otherwise
@@ -78,7 +82,7 @@ class Button {
 				}
 				break
 			case 'slide':
-				console.log("Key down here Slide:", this.pi_payload.currentScene, "OBS", OBS, "coords", this.coordinates.column, this.coordinates.row,  "state", this.state, this)
+				console.log("Key down here Slide:", this.pi_payload.currentScene, "OBS", OBS, "coords", this.coordinates.column, this.coordinates.row, "state", this.state, this)
 				switch (this.state) {
 					case keyInactive:
 						this._PreviewSlide()
@@ -89,7 +93,7 @@ class Button {
 
 					// Remainder of these should just trigger an alarm.
 					case keyPreview:
-					case keySourcePreview: 
+					case keySourcePreview:
 					case keySourceLive:
 					case keyLiveOutput:
 						StreamDeck.sendAlert(this.context)
@@ -185,11 +189,14 @@ class Button {
 		}
 	}
 
-	_NewSlideBaseScene () {
+	_NewSlideBaseScene() {
 		// New Preview test when slide scene is active.
 
 		console.log("_NewSlideBaseScene", this)
-		
+
+
+		// Test to see if our scene is valid for slide scene.
+		// I.e. does it contain the Grouping scene in the current slide active.
 		if (!obsIsSlideGroupScene(this.pi_payload.currentScene)) {
 			StreamDeck.sendAlert(this.context)
 			return
@@ -198,16 +205,6 @@ class Button {
 
 		// TODO - Need to actually setup preview for this - align it up and ready for preview.
 
-
-		// Test to see if our scene is valid for slide scene.
-		// I.e. does it contain the Grouping scene in the current slide active.
-
-		// So check OBS.Program - for Grouping Scene - if there is one on the button.
-		// What about if the slide sequence is active, and we are live on the main camera - then just cancel completely ?
-		// We can do that by checking current type.......
-		// if fail - just alarm then - and ignore.
-		// Actually - that won't work - just go full program preview there and cancel slides.
-		// 
 		// TODO - partially working now.
 		// 1. Need to make sure next p;review if valid is also yellow.
 		// 2. More secure disarming of slides - a bit random here.
@@ -215,7 +212,7 @@ class Button {
 		this.setPreviewScene()
 		// this._setState(keyNewSlideBaseScene)
 		handleNewSlideBaseScene(this)   // TODO - so maybe this isn't needed
-	
+
 	}
 
 
@@ -270,10 +267,10 @@ class Button {
 		OBS.preview.current.type = this.type
 		OBS.preview.current.button = this.context
 		this.setOnline()
-}
+	}
 
 	setProgram() {
-		if (this.type != '' ) {
+		if (this.type != '') {
 			console.log("setProgram", this)
 			this._setState(keyLiveOutput)
 			OBS.program.current.type = this.type
@@ -321,7 +318,7 @@ class Button {
 			this.setOffline()
 		}
 	}
-	
+
 	_setState(newstate) {
 		console.log("Setting state to ", newstate)
 		StreamDeck.setState(this.context, newstate)
@@ -360,7 +357,7 @@ class Button {
 					this._ActiveButtonBoxes(ctx, canvas)
 				}
 				break
-	
+
 			default:
 				console.log("Setting blackimage for main", this)
 				this.setOffline()
@@ -386,7 +383,7 @@ class Button {
 			case keySourceLive:
 				if (this.pi_payload.currentScene == OBS.program.slideBaseScene) {
 					circle_col = yellow
-				} 
+				}
 				lower_bar = red
 				break
 			case keyLiveOutput:
@@ -402,14 +399,14 @@ class Button {
 				circle_col = yellow
 				break
 		}
-		console.log("***** SetOnline Scene:", this.pi_payload.currentScene, 
-					"coords", this.coordinates.column, this.coordinates.row, 
-					"source", this.pi_payload.currentSource, 
-					"state", this.state, 
-					"image", this.pi_payload.currentButtonImage,
-					"main:", main_box, 
-					"lower", lower_bar, 
-					"Circle:", circle_col)
+		console.log("***** SetOnline Scene:", this.pi_payload.currentScene,
+			"coords", this.coordinates.column, this.coordinates.row,
+			"source", this.pi_payload.currentSource,
+			"state", this.state,
+			"image", this.pi_payload.currentButtonImage,
+			"main:", main_box,
+			"lower", lower_bar,
+			"Circle:", circle_col)
 
 		ctx.beginPath()
 		if (circle_col != "") {
@@ -430,9 +427,9 @@ class Button {
 		if (lower_bar != "") {
 			ctx.beginPath();
 			ctx.strokeStyle = lower_bar
-			ctx.lineWidth = rectangle_line_width*2;
+			ctx.lineWidth = rectangle_line_width * 2;
 			ctx.moveTo(0, src_rectangle_y)
-			ctx.lineTo(rectangle_width+rectangle_line_width, src_rectangle_y)
+			ctx.lineTo(rectangle_width + rectangle_line_width, src_rectangle_y)
 			ctx.stroke()
 		}
 		// console.log("Canvas output", canvas.toDataURL())
@@ -452,7 +449,7 @@ class Button {
 		} else {
 			StreamDeck.setImage(this.context, canvas.toDataURL(), StreamDeck.BOTH)
 		}
-	
+
 	}
 
 	_loadButtonImage(ctx, imagecontents) {
@@ -460,8 +457,8 @@ class Button {
 		return new Promise((resolve, reject) => { // eslint-disable-line no-unused-vars
 			console.log("Loading Button image and drawing it.")
 			var btnimg = new Image();
-			btnimg.onload = function() {
-				ctx.drawImage(btnimg,0,0)
+			btnimg.onload = function () {
+				ctx.drawImage(btnimg, 0, 0)
 				resolve("Image Loaded")
 			}
 			btnimg.src = imagecontents
