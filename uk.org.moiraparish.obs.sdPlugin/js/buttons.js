@@ -209,8 +209,9 @@ class Button {
 		// 1. Need to make sure next p;review if valid is also yellow.
 		// 2. More secure disarming of slides - a bit random here.
 
-		this.setPreviewScene()
+		// this.setPreviewScene()
 		// this._setState(keyNewSlideBaseScene)
+		// TBD - 2nd time round this is failing to set state ........ - FIX FIX FIX
 		handleNewSlideBaseScene(this)   // TODO - so maybe this isn't needed
 
 	}

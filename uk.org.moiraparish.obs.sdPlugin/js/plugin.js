@@ -29,9 +29,11 @@ let buttons = {}
 
 let OBS = {
 	scenes: [
-		{name: "" ,
-		slideGroup: false,
-		sources: []},
+		{
+			name: "",
+			slideGroup: false,
+			sources: []
+		},
 	],
 	studioMode: null,
 	program: {
@@ -158,19 +160,19 @@ function obsUpdateScenes() {
 			let source_list = []
 			let slideGroup = false
 			s.sources.forEach((src) => {
-					source_list.push({'name': src.name, 'type': src.type})
-					if (src.type == "scene") {
-						if (src.name == slideGroupScene) slideGroup = true
-						scene_dump.scenes.forEach((subscene) => {
-							if (subscene.name == src.name) {
-								subscene.sources.forEach((subSrc) => {
-									source_list.push({'name': subSrc.name, 'type': subSrc.type})
-								})
-							}
-						})
-					}
+				source_list.push({ 'name': src.name, 'type': src.type })
+				if (src.type == "scene") {
+					if (src.name == slideGroupScene) slideGroup = true
+					scene_dump.scenes.forEach((subscene) => {
+						if (subscene.name == src.name) {
+							subscene.sources.forEach((subSrc) => {
+								source_list.push({ 'name': subSrc.name, 'type': subSrc.type })
+							})
+						}
+					})
+				}
 			})
-			return {"name": s.name, "slideGroup": slideGroup,"sources": source_list}
+			return { "name": s.name, "slideGroup": slideGroup, "sources": source_list }
 		})
 	}).then(() => {
 		// Send scene list to Streamdeck as as global setting.
@@ -227,7 +229,7 @@ function obsGetSceneCamera(scene_name) {
 			break
 		}
 	}
-	for (srcs of scene_sources) { 
+	for (srcs of scene_sources) {
 		console.log("Looking for camera match", srcs)
 		if (srcs.type == 'ndi_source' && srcs.name.includes('Camera')) return srcs.name
 	}
@@ -281,7 +283,7 @@ function updatePI(e) {
 	}
 	sendUpdatedScenesToPI()
 	// sendButtonImageToPi(e) // TODO - do we need this anymore
-//	document.querySelector('.sdpi-file-info[for="buttonimage"]').textContent = 'marina.png';
+	//	document.querySelector('.sdpi-file-info[for="buttonimage"]').textContent = 'marina.png';
 }
 
 function sendUpdatedScenesToPI() {
@@ -291,12 +293,12 @@ function sendUpdatedScenesToPI() {
 }
 
 
-function sendButtonImageToPi (e) {
+function sendButtonImageToPi(e) {
 	// Todo ????
-//	StreamDeck.sendToPI(currentPI.context, sceneAction, {
-//		buttonimage: buttons[e.context].buttonimage,
-//		buttonimagecontents: buttons[e.context].buttonimagecontents
-//	})
+	//	StreamDeck.sendToPI(currentPI.context, sceneAction, {
+	//		buttonimage: buttons[e.context].buttonimage,
+	//		buttonimagecontents: buttons[e.context].buttonimagecontents
+	//	})
 
 }
 
@@ -305,7 +307,7 @@ function sendButtonImageToPi (e) {
 function handleStreamDeckMessages(e) {
 	const data = JSON.parse(e.data)
 	if (debug) console.log(`${data.event}: `, data)
-	switch(data.event) {
+	switch (data.event) {
 		case 'deviceDidConnect':
 			StreamDeck.getGlobalSettings(pluginUUID)
 			break
@@ -350,7 +352,7 @@ function handleStreamDeckMessages(e) {
 					default:
 						type = 'none'
 				}
-			
+
 				buttons[data.context] = new Button(type, data)
 				console.log("didReceiveSettings Updating Button", data)
 				if (type != '') updateButton(data.context)
@@ -405,7 +407,7 @@ function handleProgramSceneChanged(e) {
 	if (e['name']) _program = e['name']
 
 	if (_program != OBS.program.sceneName) {
-		console.log("handleProgramSceneChanged: _program:", _program, "sceneName:", OBS.program.sceneName )
+		console.log("handleProgramSceneChanged: _program:", _program, "sceneName:", OBS.program.sceneName)
 		let button = {}
 		OBS.program.sceneName = _program
 		if (OBS.program.next.button) {
@@ -444,7 +446,7 @@ function handlePreviewSceneChanged(e) {
 	if (e['name']) _preview = e['name']
 
 	if (_preview != OBS.preview.sceneName) {
-		console.log("handlePreviewSceneChanged: _preview:", _preview, "sceneName:", OBS.preview.sceneName )
+		console.log("handlePreviewSceneChanged: _preview:", _preview, "sceneName:", OBS.preview.sceneName)
 		let button = {}
 		OBS.preview.sceneName = _preview
 		// Save the preview sources
@@ -460,7 +462,7 @@ function handlePreviewSceneChanged(e) {
 				OBS.preview.slideBaseScene = button.pi_payload.slideBaseScene
 				if (OBS.preview.slideBaseScene == "") console.log("handlePreviewSceneChanged: Warning - EMPTY slideBaseScene")
 				console.log("handlePreviewSceneChanged: OBS is", OBS)
-			} 
+			}
 		} else if (_preview != OBS.preview.slideBaseScene) {
 			console.log("handlePreviewSceneChanged: Clearing SlideBaseScene", _preview, OBS)
 			OBS.preview.slideBaseScene = ''
@@ -523,7 +525,7 @@ function updatePreviewButtons() {
 		}
 	})
 	findButtonsBySource(OBS.preview.sources).forEach(b => {
-		if (!previewButtons.includes(b))  buttons[b].setSourcePreview()
+		if (!previewButtons.includes(b)) buttons[b].setSourcePreview()
 	})
 }
 
@@ -586,7 +588,7 @@ function disarmSlides(all) {
 	console.log("Disarming Slides", all)
 
 	Object.keys(buttons).forEach((b) => {
-		if (buttons[b].type == 'slide' ) {
+		if (buttons[b].type == 'slide') {
 			// Test for live slide......
 			console.log("Working on button", buttons[b])
 			slideScene = ''
