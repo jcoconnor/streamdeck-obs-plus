@@ -105,6 +105,7 @@ class Button {
 
 	_Preview() {
 		StreamDeck.sendOk(this.context)
+		disarmSlides(true)
 		this.setPreviewScene()
 		this._setState(keyPreview)
 	}
@@ -198,7 +199,7 @@ class Button {
 		// Test to see if our scene is valid for slide scene.
 		// I.e. does it contain the Grouping scene in the current slide active.
 		if (!obsIsSlideGroupScene(this.pi_payload.currentScene)) {
-			StreamDeck.sendAlert(this.context)
+			this._Preview()
 			return
 		}
 		StreamDeck.sendOk(this.context)
@@ -219,9 +220,8 @@ class Button {
 
 	_ClearSlidesAndLive() {
 		console.log("_ClearSlidesAndLive: this", this)
-		// TODO - Disarm slides
 		disarmSlides(true)
-		this._LiveOutput()
+		this._LiveOutput()  // Need to flag because our sense isn't the actual correct one.
 	}
 
 	_LiveOutput() {
@@ -230,7 +230,11 @@ class Button {
 		console.log("Starting Scene transition to program")
 		OBS.program.next.button = this.context
 		OBS.program.next.type = this.type
-		obs.send('TransitionToProgram')
+		// Doing explicit set Current scene here is safer than transitionToProgram
+		// as it allows for properly resettings the slides.
+		obs.send('SetCurrentScene', {
+			'scene-name': this.pi_payload.currentScene
+		})
 
 		console.log("Checking button state", this)
 		this._setState(keySourceLive)
