@@ -3,7 +3,7 @@ const keyPreview = 1
 const keySourcePreview = 3
 const keySourceLive = 4
 const keyLiveOutput = 5
-const keySlidePreview = 6
+const keySlidePreview = 6   
 const keyNewSlideBaseScene = 7
 
 
@@ -41,7 +41,7 @@ class Button {
 	keyDown() {
 		console.log("Working on Key Down", this)
 		switch (this.type) {
-			case 'scene':
+			case type_scene:
 				console.log("Key down here Scene:", this.pi_payload.currentScene, "OBS", OBS, "coords", this.coordinates.column, this.coordinates.row, "source", this.pi_payload.currentSource, "state", this.state, this)
 				switch (this.state) {
 					case keyInactive:
@@ -50,9 +50,6 @@ class Button {
 						} else {
 							this._Preview()
 						}
-						break
-					case keyNewSlideBaseScene:
-						this._ClearSlidesAndLive()
 						break
 					case keyPreview:
 						this._LiveOutput()
@@ -66,14 +63,14 @@ class Button {
 						break
 					case keySourceLive:
 						// Check for overlay - otherwise
-						if (OBS.program.current.type == 'slide' && OBS.program.slideBaseScene == this.pi_payload.currentScene) {
+						if (OBS.program.current.type == type_slide && OBS.program.slideBaseScene == this.pi_payload.currentScene) {
 							this._LiveOutputSlide()
 						} else {
 							StreamDeck.sendAlert(this.context)
 						}
 						break
 					case keyLiveOutput:
-						if (OBS.program.current.type == 'slide' && OBS.program.slideBaseScene == this.pi_payload.currentScene) {
+						if (OBS.program.current.type == type_slide && OBS.program.slideBaseScene == this.pi_payload.currentScene) {
 							this._LiveOutputSlide()
 						} else {
 							StreamDeck.sendAlert(this.context)
@@ -81,7 +78,7 @@ class Button {
 						break
 				}
 				break
-			case 'slide':
+			case type_slide:
 				console.log("Key down here Slide:", this.pi_payload.currentScene, "OBS", OBS, "coords", this.coordinates.column, this.coordinates.row, "state", this.state, this)
 				switch (this.state) {
 					case keyInactive:
@@ -195,7 +192,14 @@ class Button {
 
 		console.log("_NewSlideBaseScene", this)
 
+/*
 
+		2. If we preview from active slides in live (current == type_slide) with a preview button capable of slides:
+			1. Go Full preview so camera is set
+			2. New function to pre-prep slides - set standby buttons as we do now to new slide.
+			3. Set live slide button with new colour (orange maybe to allow for change) to be ready for next live.
+
+   */
 		// Test to see if our scene is valid for slide scene.
 		// I.e. does it contain the Grouping scene in the current slide active.
 		if (!obsIsSlideGroupScene(this.pi_payload.currentScene)) {
@@ -203,16 +207,6 @@ class Button {
 			return
 		}
 		StreamDeck.sendOk(this.context)
-
-		// TODO - Need to actually setup preview for this - align it up and ready for preview.
-
-		// TODO - partially working now.
-		// 1. Need to make sure next p;review if valid is also yellow.
-		// 2. More secure disarming of slides - a bit random here.
-
-		// this.setPreviewScene()
-		// this._setState(keyNewSlideBaseScene)
-		// TBD - 2nd time round this is failing to set state ........ - FIX FIX FIX
 		handleNewSlideBaseScene(this)   // TODO - so maybe this isn't needed
 
 	}
@@ -246,6 +240,8 @@ class Button {
 		console.log("Starting Scene transition to program")
 		OBS.program.next.button = this.context
 		OBS.program.next.type = this.type
+
+		// TBD - Go back to transition here from previous - or maybe this will continue to do job ???
 		obs.send('SetCurrentScene', {
 			'scene-name': this.pi_payload.currentScene
 		})
@@ -262,10 +258,10 @@ class Button {
 		// Add detection here for primed/no primed
 		console.log("setPreview", this)
 		switch (this.type) {
-			case 'scene':
+			case type_scene:
 				this._setState(keyPreview)
 				break
-			case 'slide':
+			case type_slide:
 				this._setState(keySlidePreview)
 				break;
 		}
@@ -290,7 +286,7 @@ class Button {
 			this._setState(keySourcePreview)
 			this.state = keySourcePreview
 			// TODO - Button detection.
-			if (OBS.preview.type == 'scene') {
+			if (OBS.preview.type == type_scene) {
 
 			}
 			this.setOnline()
@@ -300,19 +296,13 @@ class Button {
 	setSourceProgram() {
 		console.log("setSourceProgram", this)
 		switch (this.type) {
-			case 'scene':
+			case type_scene:
 				this._setState(keySourceLive)
 				break
-			case 'slide':
+			case type_slide:
 				this._setState(keySlidePreview)
 				break;
 		}
-		this.setOnline()
-	}
-
-	setNewSlideBaseScene() {
-		console.log("setNewSlideBaseScene", this)
-		this._setState(keyNewSlideBaseScene)
 		this.setOnline()
 	}
 
@@ -335,7 +325,7 @@ class Button {
 
 		// TODO - remove duplicates....
 		switch (this.type) {
-			case 'scene':
+			case type_scene:
 				var canvas = document.getElementById('canvas')
 				var ctx = canvas.getContext('2d')
 
@@ -349,7 +339,7 @@ class Button {
 				}
 				break
 
-			case 'slide':
+			case type_slide:
 				var canvas = document.getElementById('canvas')
 				var ctx = canvas.getContext('2d')
 
@@ -399,10 +389,6 @@ class Button {
 				lower_bar = red
 				circle_col = yellow
 				break;
-			case keyNewSlideBaseScene:
-				main_box = green
-				circle_col = yellow
-				break
 		}
 		console.log("***** SetOnline Scene:", this.pi_payload.currentScene,
 			"coords", this.coordinates.column, this.coordinates.row,
