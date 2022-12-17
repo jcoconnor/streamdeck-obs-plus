@@ -13,7 +13,7 @@ Preview is actual preview as we need to position camera.
 1. If Current program button is type scene
    1. Then activate preview directly.
    2. Clear slide buttons completely as they are no longer in play.
-2. If we preview from active slides in live (current == type_slide) with a preview button capable of slides:
+3. If we preview from active slides in live (current == type_slide) with a preview button capable of slides:
    1. Go Full preview so camera is set
    2. New function to pre-prep slides - set standby buttons as we do now to new slide.
    3. Set live slide button with new colour (orange maybe to allow for change) to be ready for next live.
@@ -21,7 +21,7 @@ Preview is actual preview as we need to position camera.
       1. Current live button select - switch over to fully live on this button with new scene select. Which means lock disappears from associated camera buttons
       2. Standby slide button select - make it live but also fixup previous live button - preview button is still preview now in slide locked mode.
       3. Preview button select - then cancel all slides and revert to previous camera for that slide (can we do this).
-3. If we preview from active slides in live, with a non-slide capable preview:
+4. If we preview from active slides in live, with a non-slide capable preview:
    1. Cancel slides except active one - keep this red tho as can't be pressed
    2. On next live:
       1. Preview button - cancel remainder slide and re-active previous live camera button as preview

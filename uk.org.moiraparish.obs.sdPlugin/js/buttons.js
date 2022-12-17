@@ -45,21 +45,13 @@ class Button {
 				console.log("Key down here Scene:", this.pi_payload.currentScene, "OBS", OBS, "coords", this.coordinates.column, this.coordinates.row, "source", this.pi_payload.currentSource, "state", this.state, this)
 				switch (this.state) {
 					case keyInactive:
-						if (OBS.program.slideBaseScene != "") {
-							this._NewSlideBaseScene()
-						} else {
-							this._Preview()
-						}
+						this._Preview()
 						break
 					case keyPreview:
 						this._LiveOutput()
 						break
 					case keySourcePreview:
-						if (OBS.program.slideBaseScene != "") {
-							this._NewSlideBaseScene()
-						} else {
-							this._Preview()
-						}
+						this._Preview()
 						break
 					case keySourceLive:
 						// Check for overlay - otherwise
@@ -102,18 +94,17 @@ class Button {
 
 	_Preview() {
 		StreamDeck.sendOk(this.context)
-		disarmSlides(true)
 		this.setPreviewScene()
 		this._setState(keyPreview)
 	}
 
 
 	setPreviewScene() {
+		// TODO - Redundant function.
 		if (this.pi_payload.currentScene != OBS.preview.sceneName) {
 			console.log("Setting Scene to: ", this.pi_payload.currentScene)
 			OBS.preview.next.button = this.context
 			OBS.preview.next.type = this.type
-			// disarmSlides() - to heavy here - put it into post-preview work instead.
 			obs.send('SetPreviewScene', {
 				'scene-name': this.pi_payload.currentScene
 			})
@@ -187,37 +178,6 @@ class Button {
 		}
 	}
 
-	_NewSlideBaseScene() {
-		// New Preview test when slide scene is active.
-
-		console.log("_NewSlideBaseScene", this)
-
-/*
-
-		2. If we preview from active slides in live (current == type_slide) with a preview button capable of slides:
-			1. Go Full preview so camera is set
-			2. New function to pre-prep slides - set standby buttons as we do now to new slide.
-			3. Set live slide button with new colour (orange maybe to allow for change) to be ready for next live.
-
-   */
-		// Test to see if our scene is valid for slide scene.
-		// I.e. does it contain the Grouping scene in the current slide active.
-		if (!obsIsSlideGroupScene(this.pi_payload.currentScene)) {
-			this._Preview()
-			return
-		}
-		StreamDeck.sendOk(this.context)
-		handleNewSlideBaseScene(this)   // TODO - so maybe this isn't needed
-
-	}
-
-
-	_ClearSlidesAndLive() {
-		console.log("_ClearSlidesAndLive: this", this)
-		disarmSlides(true)
-		this._LiveOutput()  // Need to flag because our sense isn't the actual correct one.
-	}
-
 	_LiveOutput() {
 		console.log("_LiveOutput: this", this)
 		StreamDeck.sendOk(this.context)
@@ -241,7 +201,7 @@ class Button {
 		OBS.program.next.button = this.context
 		OBS.program.next.type = this.type
 
-		// TBD - Go back to transition here from previous - or maybe this will continue to do job ???
+		// TODO - Go back to transition here from previous - or maybe this will continue to do job ???
 		obs.send('SetCurrentScene', {
 			'scene-name': this.pi_payload.currentScene
 		})
