@@ -575,7 +575,7 @@ function armSlides(previewSlideScene, baseCamera, slideBaseScene) {
 }
 
 function armSlideButton(b, baseCamera, slideBaseScene) {
-	console.log("Arming SlideButton", buttons[b], baseCamera, slideBaseScene)
+	console.log("Arming SlideButton", buttons[b], 'baseCamera', baseCamera, 'slideBaseScene', slideBaseScene)
 	slideScene = ''
 	let curSc = {}
 	for (curSc of buttons[b].pi_payload.currentScenes) {
@@ -592,16 +592,14 @@ function armSlideButton(b, baseCamera, slideBaseScene) {
 
 
 function disarmSlides(all) {
-
 	console.log("disarmSlides: Disarming Slides")
-
 	Object.keys(buttons).forEach((b) => {
 		if (buttons[b].type == type_slide && buttons[b].state) {
-			// Test for live slide......
 			console.log("Working on button", buttons[b])
 			slideScene = ''
 			buttons[b].pi_payload.currentScene = ''
 			buttons[b].pi_payload.currentSource = ''
+			buttons[b].pi_payload.slideBaseScene = ''
 			console.log("Disarm Slides - slideScene", slideScene, buttons[b])
 		}
 	})
@@ -620,8 +618,9 @@ function handleNewSlidePreviewScene(selectedButton) {
 	Object.keys(buttons).forEach((b) => {
 		if (buttons[b].type == type_slide) {
 			console.log("handleNewSlidePreviewScene: Working on Button", buttons[b])
-			buttons[b].pi_payload.slideBaseScene = selectedButton.pi_payload.currentScene  // Need to pin this in here.
+			buttons[b].pi_payload.slideBaseScene = selectedButton.pi_payload.currentScene 
 			armSlideButton(b, OBS.preview.camera, selectedButton.pi_payload.currentScene)
+			// This is misbehaving here - might be a console.log timing issue but the buttons value isn't getting updated properly.
 			console.log("handleNewSlidePreviewScene: After update", buttons[b])
 		}
 	})
