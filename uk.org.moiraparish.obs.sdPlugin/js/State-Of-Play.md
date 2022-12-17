@@ -34,3 +34,15 @@ Question - how do we check yellow button - I guess if we are in slide territory.
 
 New States:
 Evaluate if we need these.
+
+
+Issues/Faults.
+1. Disarm slides doesn't clear the yellow button on the current live - think fixed this.
+2. But Previous Live is no longer appearing either. To aggressive a clear - can't disarm if a button is live. - Fixed this.
+3. But If slides disarmed - can't select other one - must arm against.
+4. Slide - Key Source Preview - Yellow Buttons please ???
+
+
+
+
+So - on Live - how to we drop the disarmed slide completely - when it goes out of range..... ?

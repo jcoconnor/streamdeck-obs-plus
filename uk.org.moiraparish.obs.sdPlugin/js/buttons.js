@@ -77,12 +77,12 @@ class Button {
 						this._PreviewSlide()
 						break
 					case keySlidePreview:
-						this._LiveOutputSlide()
+					case keySourcePreview:    // Allows slide to be switched over to source preview.
+							this._LiveOutputSlide()
 						break
 
 					// Remainder of these should just trigger an alarm.
 					case keyPreview:
-					case keySourcePreview:
 					case keySourceLive:
 					case keyLiveOutput:
 						StreamDeck.sendAlert(this.context)
@@ -188,7 +188,7 @@ class Button {
 	_LiveOutput() {
 		console.log("_LiveOutput: this", this)
 		StreamDeck.sendOk(this.context)
-		console.log("Starting Scene transition to program")
+		console.log("_LiveOutput: Starting Scene transition to program")
 		OBS.program.next.button = this.context
 		OBS.program.next.type = this.type
 		// Doing explicit set Current scene here is safer than transitionToProgram
@@ -204,7 +204,7 @@ class Button {
 	_LiveOutputSlide() {
 		StreamDeck.sendOk(this.context)
 
-		console.log("Starting Scene transition to program")
+		console.log("_LiveOutputSlideP Starting Scene transition to program")
 		OBS.program.next.button = this.context
 		OBS.program.next.type = this.type
 
@@ -340,6 +340,9 @@ class Button {
 				circle_col = green
 				break
 			case keySourcePreview:
+				if (this.pi_payload.currentScene == OBS.program.slideBaseScene) {
+					circle_col = yellow
+				}
 				lower_bar = green
 				break
 			case keySourceLive:
