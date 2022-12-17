@@ -122,9 +122,16 @@ class Button {
 			1. Yes - setup Preview scenario with that.
 			2. No - Check Preview - does it match - then setup scenario
 		2. Alert
+		   Further checks here to handle 
 		*/
 
-		console.log("Checking scene grouping against grouping:", this.pi_payload.currentSceneGrouping, "OBS Object", OBS)
+		if (OBS.program.slideBaseScene != "") {
+			console.log("_PreviewSlide - Active Slide sequence in progress")
+			StreamDeck.sendAlert(this.context)
+			return
+		}
+
+		console.log("_PreviewSlide: Checking scene grouping against grouping:", this.pi_payload.currentSceneGrouping, "OBS Object", OBS)
 
 		let slideBaseScene = ''
 		let baseCamera = ''

@@ -468,8 +468,7 @@ function handlePreviewSceneChanged(e) {
 			} else if (button.type == type_scene && OBS.program.slideBaseScene != "") {
 				if (obsIsSlideGroupScene(button.pi_payload.currentScene)) {
 					console.log("handlePreviewSceneChanged: Special Arm Slide for new preview scene")
-					// Calculate new slide base scene for here .... - its the one for this preview ......
-					handleNewSlidePreviewScene(button.pi_payload.currentScene, OBS.preview.camera, button.pi_payload.currentScene)
+					handleNewSlidePreviewScene(button)
 				} else {
 					console.log("handlePreviewSceneChanged: Disarming slides for this new preview")
 					disarmSlides()
@@ -564,35 +563,35 @@ function armSlides(previewSlideScene, baseCamera, slideBaseScene) {
 	console.log("Arm Slides", "prev slide:", previewSlideScene, "baseCam:", baseCamera)
 	Object.keys(buttons).forEach((b) => {
 		if (buttons[b].type == type_slide && buttons[b].pi_payload.currentScene != previewSlideScene) {
-			armSlideButton(b, baseCamera, slideBaseScene)
+			armSlideButton(buttons[b], baseCamera, slideBaseScene)
 		}
 	})
 }
 
-function armSlideButton(b, baseCamera, slideBaseScene) {
-	console.log("Arming SlideButton", buttons[b])
+function armSlideButton(buttonToArm, baseCamera, slideBaseScene) {
+	console.log("Arming SlideButton", buttonToArm)
 	slideScene = ''
 	let curSc = {}
-	for (curSc of buttons[b].pi_payload.currentScenes) {
+	for (curSc of buttonToArm.pi_payload.currentScenes) {
 		console.log("Scene:", curSc.slideScene, "Camera", curSc.camera)
 		if (baseCamera == curSc.camera) {
 			slideScene = curSc.slideScene
 		}
 	}
-	buttons[b].pi_payload.currentScene = slideScene
-	buttons[b].pi_payload.currentSource = baseCamera
-	buttons[b].pi_payload.slideBaseScene = slideBaseScene
-	console.log("Arm Slides - slideScene", slideScene, buttons[b])
+	buttonToArm.pi_payload.currentScene = slideScene
+	buttonToArm.pi_payload.currentSource = baseCamera
+	buttonToArm.pi_payload.slideBaseScene = slideBaseScene
+	console.log("Arm Slides - slideScene", slideScene, buttonToArm)
 }
 
 
-function disarmSlides(all) {
+function disarmSlides() {
 	// Disarm slides completely - clear all slide buttons and flags.
 
-	console.log("Disarming Slides", all)
+	console.log("Disarming Slides")
 
 	Object.keys(buttons).forEach((b) => {
-		if (buttons[b].type == type_slide && buttons[b].state != keyLiveOutput) {
+		if (buttons[b].type == type_slide && buttons[b].state) {
 			// Test for live slide......
 			console.log("Working on button", buttons[b])
 			slideScene = ''
@@ -601,32 +600,22 @@ function disarmSlides(all) {
 			console.log("Disarm Slides - slideScene", slideScene, buttons[b])
 		}
 	})
-	OBS.program.slideBaseScene = ''
-	OBS.preview.slideBaseScene = ''
+	// TODO - this needs to be done somewhere........
+	// OBS.program.slideBaseScene = ''
+	// OBS.preview.slideBaseScene = ''
 }
 
 
-function handleNewSlidePreviewScene() {
-
+function handleNewSlidePreviewScene(selectedButton) {
 	// TODO - Remodel here. XXXX
 	// Run through each slide scenes buttons and reset except for the live one which needs to move to "new state"
-	console.log("handleNewSlidePreviewScene: Actions here please", button)
+	console.log("handleNewSlidePreviewScene: Actions here please", selectedButton)
+	disarmSlides()
 	Object.keys(buttons).forEach((b) => {
-
-		// see if type slide.
-		// Then check if we are the live one - otherwise update to new scene.
-		if (buttons[b].state == keyLiveOutput) {
-			if (buttons[b].sceneName == "Live Scene") {
-				// Special case - don't update button but mark to allow changed - new state ?
-			} else {
-				// Otherwise set the button.
-				armSlideButton(b, )
-
-			}
+		curButton = buttons[b]
+		if (curButton.type == type_slide) {
+			armSlideButton(curButton, OBS.preview.camera, OBS.preview.sceneName)
 		}
-
-
-		// if (buttons[b].state == keyNewSlideBaseScene) buttons[b].state = keyInactive
 	})
 	updateButtons()
 }
