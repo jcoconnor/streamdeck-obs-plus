@@ -143,13 +143,15 @@ function obsUpdateScenes() {
 	console.log("Entering obsUpdateScenes")
 	// Pre-Process to get button data if available.
 	let slideGroupScene = ""
-	Object.keys(buttons).forEach((b) => {
-		console.log("Working on Button", buttons[b])
+	let buttonKeys = []
+	buttonKeys = Object.keys(buttons)
+	for (b of buttonKeys) {
+		console.log("Working on Button", b, buttons[b])
 		if (buttons[b].type == type_slide) {
 			console.log("Found Slide Group Match")
 			slideGroupScene = buttons[b].pi_payload.currentSceneGrouping
 		}
-	})
+	}
 	console.log("Slide Group Scene", slideGroupScene)
 
 	// BUild Scene Map
@@ -420,6 +422,7 @@ function handleProgramSceneChanged(e) {
 				console.log("handleProgramSceneChanged: Setting Base slide scene and arming slides", button.pi_payload.slideBaseScene)
 				armSlides(button.pi_payload.currentScene, OBS.program.camera, button.pi_payload.slideBaseScene)
 				OBS.program.slideBaseScene = button.pi_payload.slideBaseScene
+				OBS.preview.slideBaseScene = ""
 				console.log("handleProgramSceneChanged: slideBaseScene", OBS.program.slideBaseScene)
 				if (OBS.program.slideBaseScene == "") console.log("handleProgramSceneChanged: Warning - EMPTY slideBaseScene")
 				console.log("handleProgramSceneChanged: OBS is", OBS)
@@ -442,7 +445,6 @@ function handleProgramSceneChanged(e) {
 }
 
 function handlePreviewSceneChanged(e) {
-	// TODO - Need to capture state == keyNewSlideBaseScene
 	// NB - think there is an async issue with this dump as it reflects the post change scenario.
 	console.log("handlePreviewSceneChanged: Just before Preview Scene Change - OBS is", OBS)
 	console.log("e is ", e)
@@ -541,7 +543,9 @@ function clearRestOfButtons() {
 	previewButtons = findButtonsByScene(OBS.preview.sceneName, OBS.preview.sources)
 	console.log("clearRestOfButtons Program Buttons", programButtons)
 	console.log("clearRestOfButtons Preview Buttons", previewButtons)
-	Object.keys(buttons).forEach((b) => {
+	let buttonKeys = []
+	buttonKeys = Object.keys(buttons)
+	for (b of buttonKeys) {
 		if (programButtons.includes(b)) {
 			console.log("Ignoring program button", b)
 		} else if (previewButtons.includes(b)) {
@@ -552,8 +556,7 @@ function clearRestOfButtons() {
 			console.log("setting button off air", b)
 			buttons[b].setOffAir()
 		}
-	})
-
+	}
 }
 
 function updateButtons() {
@@ -567,11 +570,13 @@ function updateButtons() {
 
 function armSlides(previewSlideScene, baseCamera, slideBaseScene) {
 	console.log("Arm Slides", "prev slide:", previewSlideScene, "baseCam:", baseCamera)
-	Object.keys(buttons).forEach((b) => {
+	let buttonKeys = []
+	buttonKeys = Object.keys(buttons)
+	for (b of buttonKeys) {
 		if (buttons[b].type == type_slide && buttons[b].pi_payload.currentScene != previewSlideScene) {
 			armSlideButton(b, baseCamera, slideBaseScene)
 		}
-	})
+	}
 }
 
 function armSlideButton(b, baseCamera, slideBaseScene) {
@@ -593,16 +598,19 @@ function armSlideButton(b, baseCamera, slideBaseScene) {
 
 function disarmSlides(all) {
 	console.log("disarmSlides: Disarming Slides")
-	Object.keys(buttons).forEach((b) => {
+	let buttonKeys = []
+	buttonKeys = Object.keys(buttons)
+	for (b of buttonKeys) {
 		if (buttons[b].type == type_slide && buttons[b].state) {
-			console.log("Working on button", buttons[b])
+			console.log("Working on button", b, buttons[b])
 			slideScene = ''
 			buttons[b].pi_payload.currentScene = ''
 			buttons[b].pi_payload.currentSource = ''
 			buttons[b].pi_payload.slideBaseScene = ''
 			console.log("Disarm Slides - slideScene", slideScene, buttons[b])
 		}
-	})
+	}
+	
 	if (all) {
 		console.log("disarmSlides: Full disarm - clear OBS base indicators")
 		OBS.program.slideBaseScene = ''
@@ -615,15 +623,18 @@ function disarmSlides(all) {
 function handleNewSlidePreviewScene(selectedButton) {
 	console.log("handleNewSlidePreviewScene: New Scene Button", selectedButton)
 	disarmSlides(false)
-	Object.keys(buttons).forEach((b) => {
+	let buttonKeys = []
+	buttonKeys = Object.keys(buttons)
+	for (b of buttonKeys) {
 		if (buttons[b].type == type_slide) {
-			console.log("handleNewSlidePreviewScene: Working on Button", buttons[b])
+			console.log("handleNewSlidePreviewScene: Working on Button", b, buttons[b])
 			buttons[b].pi_payload.slideBaseScene = selectedButton.pi_payload.currentScene 
 			armSlideButton(b, OBS.preview.camera, selectedButton.pi_payload.currentScene)
 			// This is misbehaving here - might be a console.log timing issue but the buttons value isn't getting updated properly.
 			console.log("handleNewSlidePreviewScene: After update", buttons[b])
 		}
-	})
+	}
+
 	OBS.preview.slideBaseScene = selectedButton.pi_payload.currentScene
 	console.log("handleNewSlidePreviewScene: program.slideBaseScene", OBS.program.slideBaseScene, "preview.slideBaseScene", OBS.preview.slideBaseScene)
 	updateButtons()
@@ -644,49 +655,57 @@ function updateButton(context) {
 function findButtonsByScene(scene, source_list) {
 	console.log("findButtonsByScene", scene, source_list)
 	let output = []
-	Object.keys(buttons).forEach((b) => {
+	let buttonKeys = []
+	buttonKeys = Object.keys(buttons)
+	for (b of buttonKeys) {
 		console.log("findButtonsByScene b=", b, "button", buttons[b])
 		if (buttons[b].pi_payload.currentScene && buttons[b].pi_payload.currentScene == scene) {
 			output.push(b)
 		} else if (source_list && source_list.length > 0 && source_list.includes(buttons[b].pi_payload.currentSource)) {
 			output.push(b)
 		}
-	})
+	}
 	return output
 }
 
 function findButtonsBySource(source_list) {
 	let output = []
-	Object.keys(buttons).forEach((b) => {
+	let buttonKeys = []
+	buttonKeys = Object.keys(buttons)
+	for (b of buttonKeys) {
 		if (buttons[b].pi_payload.currentSource && source_list.includes(buttons[b].pi_payload.currentSource)) {
 			output.push(b)
 		}
-	})
+	}
 	return output
 }
 
 
 function findPreviewButtons() {
 	let output = []
-	Object.keys(buttons).forEach((b) => {
+	let buttonKeys = []
+	buttonKeys = Object.keys(buttons)
+	for (b of buttonKeys) {
 		button_state = keyInactive
 		if (buttons[b].state) button_state = buttons[b].state
 		if (button_state == keyPreview || button_state == keySourcePreview) {
 			output.push(b)
 		}
-	})
+	}
 	return output
 }
 
 function findProgramButtons() {
 	let output = []
-	Object.keys(buttons).forEach((b) => {
+	let buttonKeys = []
+	buttonKeys = Object.keys(buttons)
+	for (b of buttonKeys) {
 		button_state = keyInactive
 		if (buttons[b].state) button_state = buttons[b].state
 		if (button_state == keyLiveOutput || button_state == keySourceLive) {
 			output.push(b)
 		}
-	})
+	}
 	return output
 }
 

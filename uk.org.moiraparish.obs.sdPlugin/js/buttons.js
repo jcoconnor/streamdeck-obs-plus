@@ -332,33 +332,69 @@ class Button {
 		main_box = ""
 		lower_bar = ""
 		circle_col = ""
-		switch (this.state) {
-			case keyInactive:
-				break
-			case keyPreview:
-				main_box = green
-				circle_col = green
-				break
-			case keySourcePreview:
-				if (this.pi_payload.currentScene == OBS.preview.slideBaseScene) {
-					circle_col = yellow
+		switch (this.type) {
+			case type_slide:
+				switch (this.state) {
+					// Need to select by Type as well here.
+					case keyInactive:
+						break
+					case keyPreview:
+						main_box = green
+						circle_col = green
+						break
+					case keySourcePreview:
+						// Making assumptions here that if we are in source preview then
+						// 
+						if (OBS.preview.slideBaseScene != "") {
+							circle_col = yellow
+						}
+						lower_bar = green
+						break
+					case keySourceLive:
+						if (OBS.program.slideBaseScene) != "") {
+							circle_col = yellow
+						}
+						lower_bar = red
+						break
+					case keyLiveOutput:
+						circle_col = red
+						main_box = red
+						break
+					case keySlidePreview:
+						lower_bar = red
+						circle_col = yellow
+						break;
 				}
-				lower_bar = green
-				break
-			case keySourceLive:
-				if (this.pi_payload.currentScene == OBS.preview.slideBaseScene) {
-					circle_col = yellow
+			case type_scene:
+				switch (this.state) {
+					// Need to select by Type as well here.
+					case keyInactive:
+						break
+					case keyPreview:
+						main_box = green
+						circle_col = green
+						break
+					case keySourcePreview:
+						if (this.pi_payload.currentScene == OBS.preview.slideBaseScene) {
+							circle_col = yellow
+						}
+						lower_bar = green
+						break
+					case keySourceLive:
+						if (this.pi_payload.currentScene == OBS.program.slideBaseScene) {
+							circle_col = yellow
+						}
+						lower_bar = red
+						break
+					case keyLiveOutput:
+						circle_col = red
+						main_box = red
+						break
+					case keySlidePreview:
+						lower_bar = red
+						circle_col = yellow
+						break;
 				}
-				lower_bar = red
-				break
-			case keyLiveOutput:
-				circle_col = red
-				main_box = red
-				break
-			case keySlidePreview:
-				lower_bar = red
-				circle_col = yellow
-				break;
 		}
 		console.log("***** SetOnline Scene:", this.pi_payload.currentScene,
 			"coords", this.coordinates.column, this.coordinates.row,
