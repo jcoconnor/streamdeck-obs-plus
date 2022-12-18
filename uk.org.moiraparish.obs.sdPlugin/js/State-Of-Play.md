@@ -45,4 +45,9 @@ Issues/Faults.
 
 
 
+So - when we move to Live on the Slide preview - need to cancel OBS.preview.slideBasescene
+
+
+
+
 So - on Live - how to we drop the disarmed slide completely - when it goes out of range..... ?

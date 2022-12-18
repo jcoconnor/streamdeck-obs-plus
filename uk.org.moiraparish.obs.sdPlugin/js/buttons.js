@@ -344,14 +344,14 @@ class Button {
 						break
 					case keySourcePreview:
 						// Making assumptions here that if we are in source preview then
-						// 
+						// then we are also 
 						if (OBS.preview.slideBaseScene != "") {
 							circle_col = yellow
 						}
 						lower_bar = green
 						break
 					case keySourceLive:
-						if (OBS.program.slideBaseScene) != "") {
+						if (OBS.program.slideBaseScene != "") {
 							circle_col = yellow
 						}
 						lower_bar = red
