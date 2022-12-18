@@ -340,13 +340,13 @@ class Button {
 				circle_col = green
 				break
 			case keySourcePreview:
-				if (this.pi_payload.currentScene == OBS.program.slideBaseScene) {
+				if (this.pi_payload.currentScene == OBS.preview.slideBaseScene) {
 					circle_col = yellow
 				}
 				lower_bar = green
 				break
 			case keySourceLive:
-				if (this.pi_payload.currentScene == OBS.program.slideBaseScene) {
+				if (this.pi_payload.currentScene == OBS.preview.slideBaseScene) {
 					circle_col = yellow
 				}
 				lower_bar = red

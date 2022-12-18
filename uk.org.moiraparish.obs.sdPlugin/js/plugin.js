@@ -606,8 +606,8 @@ function disarmSlides(all) {
 	if (all) {
 		console.log("disarmSlides: Full disarm - clear OBS base indicators")
 		OBS.program.slideBaseScene = ''
-		console.log("disarmSlides: slideBaseScene", OBS.program.slideBaseScene)
 		OBS.preview.slideBaseScene = ''
+		console.log("disarmSlides: slideBaseScene", OBS.program.slideBaseScene)
 	}
 }
 
@@ -624,9 +624,8 @@ function handleNewSlidePreviewScene(selectedButton) {
 			console.log("handleNewSlidePreviewScene: After update", buttons[b])
 		}
 	})
-	OBS.program.handleNewSlidePreviewScene = selectedButton.pi_payload.currentScene
-	console.log("handleNewSlidePreviewScene: slideBaseScene", OBS.program.slideBaseScene)
 	OBS.preview.slideBaseScene = selectedButton.pi_payload.currentScene
+	console.log("handleNewSlidePreviewScene: program.slideBaseScene", OBS.program.slideBaseScene, "preview.slideBaseScene", OBS.preview.slideBaseScene)
 	updateButtons()
 }
 
