@@ -50,6 +50,7 @@ let OBS = {
 			button: '',
 			type: ''
 		},
+		programTransition: false,
 		slideBaseScene: '',
 		sources: []
 	},
@@ -125,8 +126,8 @@ obs.on('AuthenticationFailure', () => {
 })
 
 obs.on('ScenesChanged', obsUpdateScenes)
-obs.on('PreviewSceneChanged', handlePreviewSceneChanged)
-obs.on('SwitchScenes', handleProgramSceneChanged)
+obs.on('PreviewSceneChanged', handlePreviewSceneChanged)     // Keyed when Preview Scene changes - also happens with switch scenes
+obs.on('SwitchScenes', handleProgramSceneChanged)            // Keyed by Transition button (switch to program)
 obs.on('StudioModeSwitched', handleStudioModeSwitched)
 
 obs.on('SceneItemAdded', obsUpdateScenes)
@@ -445,7 +446,8 @@ function handleProgramSceneChanged(e) {
 }
 
 function handlePreviewSceneChanged(e) {
-	// NB - think there is an async issue with this dump as it reflects the post change scenario.
+	// This gets triggered when a live transition is happenening.
+	// So need flag to say program transition is in progress.
 	console.log("handlePreviewSceneChanged: Just before Preview Scene Change - OBS is", OBS)
 	console.log("e is ", e)
 	let _preview = ''
@@ -460,7 +462,8 @@ function handlePreviewSceneChanged(e) {
 		OBS.preview.sources = obsGetSceneSources(_preview)
 		OBS.preview.camera = obsGetSceneCamera(_preview)
 		console.log("handlePreviewSceneChanged: Preview Scene Change - Updated OBS to", OBS)
-		if (OBS.preview.next.button) {
+		// Probably don't want this during program transition.....
+		if (OBS.preview.next.button && !OBS.program.programTransition) {
 			button = buttons[OBS.preview.next.button]
 			console.log("handlePreviewSceneChanged: pi_Payload:", button.pi_payload, "type:", button.type)
 			if (button.type == type_slide) {
@@ -491,6 +494,7 @@ function handlePreviewSceneChanged(e) {
 		console.log("handlePreviewSceneChanged: Preview same - no change")
 	}
 	console.log("handlePreviewSceneChanged: After Preview Scene Change - OBS is", OBS)
+	OBS.progream.programTransition = false
 }
 
 

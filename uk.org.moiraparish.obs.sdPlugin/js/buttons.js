@@ -191,12 +191,8 @@ class Button {
 		console.log("_LiveOutput: Starting Scene transition to program")
 		OBS.program.next.button = this.context
 		OBS.program.next.type = this.type
-		// Doing explicit set Current scene here is safer than transitionToProgram
-		// as it allows for properly resettings the slides.
-		obs.send('SetCurrentScene', {
-			'scene-name': this.pi_payload.currentScene
-		})
-
+		OBS.program.programTransition = true   // Previews handlePreviewSceneChanged from screwing things
+		obs.send('TransitionToProgram')
 		console.log("Checking button state", this)
 		this._setState(keySourceLive)
 	}
