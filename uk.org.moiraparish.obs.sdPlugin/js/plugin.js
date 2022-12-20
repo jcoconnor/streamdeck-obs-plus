@@ -463,35 +463,38 @@ function handlePreviewSceneChanged(e) {
 		OBS.preview.camera = obsGetSceneCamera(_preview)
 		console.log("handlePreviewSceneChanged: Preview Scene Change - Updated OBS to", OBS)
 		// Probably don't want this during program transition.....
-		if (!OBS.program.programTransition) {
-			if (OBS.preview.next.button) {
-				button = buttons[OBS.preview.next.button]
-				console.log("handlePreviewSceneChanged: pi_Payload:", button.pi_payload, "type:", button.type)
-				if (button.type == type_slide) {
-					console.log("handlePreviewSceneChanged: Setting Base slide scene and arming slides", button.pi_payload.slideBaseScene)
-					armSlides(button.pi_payload.currentScene, OBS.preview.camera, button.pi_payload.slideBaseScene)
-					OBS.preview.slideBaseScene = button.pi_payload.slideBaseScene
-					if (OBS.preview.slideBaseScene == "") console.log("handlePreviewSceneChanged: Warning - EMPTY slideBaseScene")
-					console.log("handlePreviewSceneChanged: OBS is", OBS)
-				} else if (button.type == type_scene && OBS.program.slideBaseScene != "") {
-					if (obsIsSlideGroupScene(button.pi_payload.currentScene)) {
-						console.log("handlePreviewSceneChanged: Special Arm Slide for new preview scene")
-						handleNewSlidePreviewScene(button)
-					} else {
-						console.log("handlePreviewSceneChanged: Disarming slides for this new preview")
-						disarmSlides(true)
-					}
+		if (OBS.program.programTransition) {
+			OBS.program.programTransition = false
+			console.log("handlePreviewSceneChanged: Live Transition - skipping remainder")
+			return
+		}
+		if (OBS.preview.next.button) {
+			button = buttons[OBS.preview.next.button]
+			console.log("handlePreviewSceneChanged: pi_Payload:", button.pi_payload, "type:", button.type)
+			if (button.type == type_slide) {
+				console.log("handlePreviewSceneChanged: Setting Base slide scene and arming slides", button.pi_payload.slideBaseScene)
+				armSlides(button.pi_payload.currentScene, OBS.preview.camera, button.pi_payload.slideBaseScene)
+				OBS.preview.slideBaseScene = button.pi_payload.slideBaseScene
+				if (OBS.preview.slideBaseScene == "") console.log("handlePreviewSceneChanged: Warning - EMPTY slideBaseScene")
+				console.log("handlePreviewSceneChanged: OBS is", OBS)
+			} else if (button.type == type_scene && OBS.program.slideBaseScene != "") {
+				if (obsIsSlideGroupScene(button.pi_payload.currentScene)) {
+					console.log("handlePreviewSceneChanged: Special Arm Slide for new preview scene")
+					handleNewSlidePreviewScene(button)
 				} else {
-					console.log("handlePreviewSceneChanged: (getout) Disarming slides for this new preview")
+					console.log("handlePreviewSceneChanged: Disarming slides for this new preview")
 					disarmSlides(true)
 				}
-			} else if (_preview != OBS.preview.slideBaseScene) {
-				console.log("handlePreviewSceneChanged: Clearing SlideBaseScene", _preview, OBS)
-				OBS.preview.slideBaseScene = ''
-				console.log("handleProgramSceneChanged: slideBaseScene", OBS.preview.slideBaseScene)
+			} else {
+				console.log("handlePreviewSceneChanged: (getout) Disarming slides for this new preview")
+				disarmSlides(true)
 			}
-			updateButtons()
+		} else if (_preview != OBS.preview.slideBaseScene) {
+			console.log("handlePreviewSceneChanged: Clearing SlideBaseScene", _preview, OBS)
+			OBS.preview.slideBaseScene = ''
+			console.log("handleProgramSceneChanged: slideBaseScene", OBS.preview.slideBaseScene)
 		}
+		updateButtons()
 	} else {
 		console.log("handlePreviewSceneChanged: Preview same - no change")
 	}
