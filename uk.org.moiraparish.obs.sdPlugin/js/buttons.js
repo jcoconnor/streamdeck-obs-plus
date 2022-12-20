@@ -203,12 +203,10 @@ class Button {
 		console.log("_LiveOutputSlideP Starting Scene transition to program")
 		OBS.program.next.button = this.context
 		OBS.program.next.type = this.type
-
-		// TODO - Go back to transition here from previous - or maybe this will continue to do job ???
+		OBS.program.programTransition = true   // Previews handlePreviewSceneChanged from screwing things
 		obs.send('SetCurrentScene', {
 			'scene-name': this.pi_payload.currentScene
 		})
-
 		console.log("Checking button state", this)
 		this._setState(keySourceLive)
 	}
