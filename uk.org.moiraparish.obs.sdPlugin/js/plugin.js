@@ -416,6 +416,9 @@ function handleProgramSceneChanged(e) {
 		console.log("handleProgramSceneChanged: _program:", _program, "sceneName:", OBS.program.sceneName)
 		let button = {}
 		OBS.program.sceneName = _program
+		// Save the program sources
+		OBS.program.sources = obsGetSceneSources(_program)
+		OBS.program.camera = obsGetSceneCamera(_program)
 		if (OBS.program.next.button) {
 			button = buttons[OBS.program.next.button]
 			console.log("handleProgramSceneChanged: pi_Payload:", button.pi_payload, "type:", button.type)
@@ -427,6 +430,10 @@ function handleProgramSceneChanged(e) {
 				console.log("handleProgramSceneChanged: slideBaseScene", OBS.program.slideBaseScene)
 				if (OBS.program.slideBaseScene == "") console.log("handleProgramSceneChanged: Warning - EMPTY slideBaseScene")
 				console.log("handleProgramSceneChanged: OBS is", OBS)
+			} else if (OBS.preview.slideBaseScene == _program) {
+				OBS.program.slideBaseScene = OBS.preview.slideBaseScene
+				OBS.preview.slideBaseScene = ''
+				console.log("handleProgramSceneChanged: slideBaseScene", OBS.program.slideBaseScene)
 			} else if (_program != OBS.program.slideBaseScene) {
 				console.log("handleProgramSceneChanged: Clearing SlideBaseScene", _program, OBS)
 				OBS.program.slideBaseScene = ''
@@ -434,9 +441,6 @@ function handleProgramSceneChanged(e) {
 			}
 		}
 
-		// Save the program sources
-		OBS.program.sources = obsGetSceneSources(_program)
-		OBS.program.camera = obsGetSceneCamera(_program)
 		console.log("handleProgramSceneChanged: Program Scene Change - Updated OBS to", OBS)
 		updateButtons()
 	} else {
@@ -578,7 +582,7 @@ function updateButtons() {
 }
 
 function armSlides(previewSlideScene, baseCamera, slideBaseScene) {
-	console.log("Arm Slides", "prev slide:", previewSlideScene, "baseCam:", baseCamera)
+	console.log("Arm Slides", "prev slide:", previewSlideScene, "baseCam:", baseCamera, 'slideBaseScene', slideBaseScene)
 	let buttonKeys = []
 	buttonKeys = Object.keys(buttons)
 	for (b of buttonKeys) { //&& buttons[b].pi_payload.currentScene != previewSlideScene

@@ -39,13 +39,11 @@ Evaluate if we need these.
 Issues/Faults.
 1. Disarm slides doesn't clear the yellow button on the current live - think fixed this.
 2. But Previous Live is no longer appearing either. To aggressive a clear - can't disarm if a button is live. - Fixed this.
-3. But If slides disarmed - can't select other one - must arm against.
-4. Slide - Key Source Preview - Yellow Buttons please ???
+3. Slide - Key Source Preview - Yellow Buttons please - Fixed
+4. But If slides disarmed - can't select other one - must arm against.
+5. Fault on Preview select to live - key goes back into source preview - not clear why.
+6. Fault on Key Down on Preview - does something else strange - found that full preview was running and doing a second arm.
 
-
-
-
-So - when we move to Live on the Slide preview - need to cancel OBS.preview.slideBasescene
 
 
 

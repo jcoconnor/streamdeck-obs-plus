@@ -200,7 +200,7 @@ class Button {
 	_LiveOutputSlide() {
 		StreamDeck.sendOk(this.context)
 
-		console.log("_LiveOutputSlideP Starting Scene transition to program")
+		console.log("_LiveOutputSlide: Starting Scene transition to program")
 		OBS.program.next.button = this.context
 		OBS.program.next.type = this.type
 		OBS.program.programTransition = true   // Previews handlePreviewSceneChanged from screwing things
