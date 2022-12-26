@@ -96,7 +96,7 @@ function updateButtonSettings () {
 
  function updateButtonImage () {
 	console.log("updateButtonImage", pi_payload.currentButtonImage)
-	document.getElementById('buttonimage').value = ""
+	document.getElementById('buttonimage').value = ''
 }
 
 function readFile(fileName, props = {}) {
@@ -140,5 +140,5 @@ function piGetSceneCamera(scene_name) {
 		if (srcs.type == 'ndi_source' && srcs.name.includes('Camera')) return srcs.name
 	}
 
-	return ""
+	return ''
 }
