@@ -14,9 +14,6 @@ function updateSceneUI(obsScenes) {
 	updateSceneControl('scenes_cam2')
 	document.getElementById('scenes_cam2').value = pi_payload.currentScenes[1].slideScene
 
-	updateSceneControl('scenes_cam3')
-	document.getElementById('scenes_cam3').value = pi_payload.currentScenes[2].slideScene
-
 	updateSceneControl('scenes_grouping')
 	document.getElementById('scenes_grouping').value = pi_payload.currentSceneGrouping
 
@@ -48,8 +45,6 @@ function updateSettings() {
 	pi_payload.currentScenes[0].camera     = piGetSceneCamera(pi_payload.currentScenes[0].slideScene)
 	pi_payload.currentScenes[1].slideScene = document.getElementById('scenes_cam2').value
 	pi_payload.currentScenes[1].camera     = piGetSceneCamera(pi_payload.currentScenes[1].slideScene)
-	pi_payload.currentScenes[2].slideScene = document.getElementById('scenes_cam3').value
-	pi_payload.currentScenes[2].camera     = piGetSceneCamera(pi_payload.currentScenes[2].slideScene)
 	pi_payload.currentSceneGrouping = document.getElementById('scenes_grouping').value
 	pi_payload.currentButtonImage = decodeURIComponent(document.getElementById('buttonimage').value.replace(/^C:\\fakepath\\/, ''))
 
@@ -75,7 +70,6 @@ document.getElementById('password').onchange = updateGlobalSettings
 
 document.getElementById('scenes_cam1').onchange = updateSettings
 document.getElementById('scenes_cam2').onchange = updateSettings
-document.getElementById('scenes_cam3').onchange = updateSettings
 document.getElementById('scenes_grouping').onchange = updateSettings
 document.getElementById('buttonimage').onchange = updateButtonSettings
 
