@@ -4,7 +4,7 @@
 	"Description": "Moira Parish Streamdeck Plugins.",
 	"Author": "John O'Connor",
 	"URL": "https://github.com/jcoconnor/streamdeck-obs-plus",
-	"Version": "0.2.7",
+	"Version": "0.4.2",
 	"Icon": "icons/icon",
 	"CodePath": "plugin.html",
 
@@ -19,6 +19,15 @@
 			"PropertyInspectorPath": "scene-pi.html",
 			"States": [
 				{"Image":"icons/scene", "Title": "0-Inactive"}
+			]
+		},
+		{
+			"Name": "Slides",
+			"UUID": "uk.org.moiraparish.obs.slides-btn",
+			"Icon": "icons/projector",
+			"PropertyInspectorPath": "slides-pi.html",
+			"States": [
+				{"Image":"icons/projector", "Title": "0-Inactive"}
 			]
 		}
 	],

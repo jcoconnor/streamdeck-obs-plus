@@ -19,4 +19,3 @@ const yellow = '#ffff00'
 const grey = '#3f3f3f'
 const black = '#000000'
 
-

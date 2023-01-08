@@ -1,34 +1,46 @@
 <!DOCTYPE html>
 <html>
 	<head>
-		<title>Moira Parish - Scene Action</title>
+		<title>Moira Parish - Slide Selector</title>
 		<link rel="stylesheet" href="css/sdpi.css">
 		<script src="js/StreamDeck.js" charset="utf-8"></script>
 	</head>
 	<body>
 		<div class="sdpi-wrapper">
+			<div type="group" class="sdpi-item" id="slidegroup">
+				<div class="sdpi-item-label">Slides</div>
 
-			<div type="group" class="sdpi-item" id="ptzgroup">
-				<div class="sdpi-item-label">Scene Select/Source Tally</div>
-				<div class="sdpi-item-group" id="ptzgroup_items">
-					<div class="sdpi-item" id="select_single">
-						<div class="sdpi-item-label">Scene</div>
-						<select class="sdpi-item-value select" id="scenes">
-							<option></option>
-						</select>
-					</div>
-					<div class="sdpi-item" id="select_single">
-						<div class="sdpi-item-label">Source</div>
-						<select class="sdpi-item-value select" id="sources">
-							<option></option>
-						</select>
-					</div>
+				<div class="sdpi-item" id="select_single">
+					<div class="sdpi-item-label">Cam 1 Slides</div>
+					<select class="sdpi-item-value select" id="scenes_cam1">
+						<option></option>
+					</select>
 				</div>
+
+				<div class="sdpi-item" id="select_single">
+					<div class="sdpi-item-label">Cam 2 Slides</div>
+					<select class="sdpi-item-value select" id="scenes_cam2">
+						<option></option>
+					</select>
+				</div>
+
+				<div class="sdpi-item" id="select_single">
+					<div class="sdpi-item-label">Grouping Scene</div>
+					<select class="sdpi-item-value select" id="scenes_grouping">
+						<option></option>
+					</select>
+				</div>
+
 				<div class="sdpi-item" id="button_file_selector">
 					<div class="sdpi-item-label">Image File</div>
 					<input class="sdpi-item-value" type="file" id="buttonimage" accept=".jpg, .jpeg, .png">
 				</div>
 			</div>
+
+
+
+
+
 
 			<div type="group" class="sdpi-item" id="globalgroup">
 				<div class="sdpi-item-label">OBS WebSocket Authentication</div>
@@ -48,8 +60,8 @@
 				</div>
 			</div>
 		<div>
-			<script src="js/definitions.js" charset="utf-8"></script>
-			<script src="js/base-pi.js" charset="utf-8"></script>
-			<script src="js/scene-pi.js" charset="utf-8"></script>
-		</body>
+		<script src="js/definitions.js" charset="utf-8"></script>
+		<script src="js/base-pi.js" charset="utf-8"></script>
+		<script src="js/slides-pi.js" charset="utf-8"></script>
+	</body>
 </html>
