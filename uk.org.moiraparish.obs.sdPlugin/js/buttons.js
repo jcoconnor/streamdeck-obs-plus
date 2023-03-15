@@ -1,9 +1,11 @@
 const keyInactive = 0
-const keyPreviewPrimed = 1
-const keyPreviewNotPrimed = 2
+const keyPreview = 1
 const keySourcePreview = 3
 const keySourceLive = 4
 const keyLiveOutput = 5
+const keySlidePreview = 6
+const keyNewSlideBaseScene = 7
+
 
 let lower_bar = ""
 let main_box = ""
@@ -14,25 +16,16 @@ class Button {
 		this.coordinates = data.coordinates
 		this.type = type
 		this.state = keyInactive
-		this.primed = false
-		this.primed_send = false
-		this.liveactive = false
-		this.liveactive_preset = false
 		this.processStreamDeckData(data)
 	}
 
 	processStreamDeckData(data) {
-		if (this.type == 'scene') {
+		console.log("Incoming data", data)
+		if (this.type != '') {
 			console.log("Processing Streamdeck Payload ......", data.payload.state, data, OBS)
-			if (data.payload.settings.scene) this.scene = data.payload.settings.scene
-			if (data.payload.settings.source) this.source = data.payload.settings.source
-			if (data.payload.settings.buttonimage) this.buttonimage = decodeURIComponent(data.payload.settings.buttonimage.replace(/^C:\\fakepath\\/, ''))
-			if (data.payload.settings.buttonimagecontents) this.buttonimagecontents = data.payload.settings.buttonimagecontents
-			if (data.payload.settings.preset) this.preset = data.payload.settings.preset
-			if (data.payload.settings.ipaddress) this.ipaddress = data.payload.settings.ipaddress
-			if (data.payload.settings.lastpreset) this.lastpreset = data.payload.settings.lastpreset
 			if (data.payload.coordinates) this.coordinates = data.payload.coordinates
-			console.log ("Payload Processing ........:", this.scene, "coords", this.coordinates.column, this.coordinates.row, "source", this.source, "state", this.state)
+			if (data.payload.settings.pi_payload) this.pi_payload = data.payload.settings.pi_payload
+			console.log("Payload Processing ........:", this)
 			switch (this.state) {
 				case keyInactive:
 					this.setOffline()
@@ -46,84 +39,218 @@ class Button {
 	}
 
 	keyDown() {
+		console.log("Working on Key Down", this)
 		switch (this.type) {
 			case 'scene':
-				console.log("Key down here Scene:", this.scene, "coords", this.coordinates.column, this.coordinates.row, "source", this.source, "state", this.state, this)
+				console.log("Key down here Scene:", this.pi_payload.currentScene, "OBS", OBS, "coords", this.coordinates.column, this.coordinates.row, "source", this.pi_payload.currentSource, "state", this.state, this)
 				switch (this.state) {
 					case keyInactive:
-						this._PreviewPrimed()
+						if (OBS.program.slideBaseScene != "") {
+							this._NewSlideBaseScene()
+						} else {
+							this._Preview()
+						}
 						break
-					case keyPreviewPrimed:
+					case keyNewSlideBaseScene:
+						this._ClearSlidesAndLive()
+						break
+					case keyPreview:
 						this._LiveOutput()
 						break
-					case keyPreviewNotPrimed:
-						this._PreviewPrimed()
-						break
-					case keySourcePreview: 
-						this._PreviewPrimed()
+					case keySourcePreview:
+						if (OBS.program.slideBaseScene != "") {
+							this._NewSlideBaseScene()
+						} else {
+							this._Preview()
+						}
 						break
 					case keySourceLive:
-						if (this.liveactive_preset && !this.liveactive) {
-							this._LiveOutput()
+						// Check for overlay - otherwise
+						if (OBS.program.current.type == 'slide' && OBS.program.slideBaseScene == this.pi_payload.currentScene) {
+							this._LiveOutputSlide()
 						} else {
 							StreamDeck.sendAlert(this.context)
 						}
 						break
 					case keyLiveOutput:
-						if (this.liveactive_preset && !this.liveactive) {
-							this._LiveOutput()
+						if (OBS.program.current.type == 'slide' && OBS.program.slideBaseScene == this.pi_payload.currentScene) {
+							this._LiveOutputSlide()
 						} else {
 							StreamDeck.sendAlert(this.context)
 						}
 						break
 				}
+				break
+			case 'slide':
+				console.log("Key down here Slide:", this.pi_payload.currentScene, "OBS", OBS, "coords", this.coordinates.column, this.coordinates.row, "state", this.state, this)
+				switch (this.state) {
+					case keyInactive:
+						this._PreviewSlide()
+						break
+					case keySlidePreview:
+						this._LiveOutputSlide()
+						break
+
+					// Remainder of these should just trigger an alarm.
+					case keyPreview:
+					case keySourcePreview:
+					case keySourceLive:
+					case keyLiveOutput:
+						StreamDeck.sendAlert(this.context)
+						break
+				}
+				break
 		}
 	}
 
-	_PreviewPrimed() {
+	_Preview() {
 		StreamDeck.sendOk(this.context)
-		if (OBS.scenes.includes(this.scene)) {
-			if (this.scene != OBS.preview) {
-				console.log("Setting Scene to: ", this.scene)
-				obs.send('SetPreviewScene', {
-					'scene-name': this.scene
-				})
-			} else {
-				console.log("Scene already set no changing")
-			}
-			clearPrimeButtons()
-			this.primed = true
-			this.primed_send = true
-			this._setState(keyPreviewPrimed)
-			this._setCameraPreset()
+		disarmSlides(true)
+		this.setPreviewScene()
+		this._setState(keyPreview)
+	}
+
+
+	setPreviewScene() {
+		if (this.pi_payload.currentScene != OBS.preview.sceneName) {
+			console.log("Setting Scene to: ", this.pi_payload.currentScene)
+			OBS.preview.next.button = this.context
+			OBS.preview.next.type = this.type
+			// disarmSlides() - to heavy here - put it into post-preview work instead.
+			obs.send('SetPreviewScene', {
+				'scene-name': this.pi_payload.currentScene
+			})
 		} else {
-			StreamDeck.sendAlert(this.context)
+			console.log("Scene already set no changing")
 		}
 	}
 
-	clearPrimed() {
-		if (this.state == keyPreviewPrimed) this._setState(keyPreviewNotPrimed)
-		this.primed = false
+
+
+	_PreviewSlide() {
+		/*
+		1. What is scene in live screen
+			Does it match our grouping scene?
+			1. Yes - setup Preview scenario with that.
+			2. No - Check Preview - does it match - then setup scenario
+		2. Alert
+		*/
+
+		console.log("Checking scene grouping against grouping:", this.pi_payload.currentSceneGrouping, "OBS Object", OBS)
+
+		let slideBaseScene = ''
+		let baseCamera = ''
+		let slideScene = ''
+
+		if (OBS.program.sources.includes(this.pi_payload.currentSceneGrouping)) {
+			console.log("We have a program match", OBS)
+			slideBaseScene = OBS.program.sceneName
+			baseCamera = OBS.program.camera
+		} else if (OBS.preview.sources.includes(this.pi_payload.currentSceneGrouping)) {
+			console.log("We have a preview match", OBS)
+			slideBaseScene = OBS.preview.sceneName
+			baseCamera = OBS.preview.camera
+		} else {
+			console.log("We have a NO MATCH")
+			StreamDeck.sendAlert(this.context)
+			return
+		}
+
+		// See if we can find slide scene match.
+		slideScene = ''
+		let curSc = {}
+		for (curSc of this.pi_payload.currentScenes) {
+			if (baseCamera == curSc.camera) {
+				slideScene = curSc.slideScene
+			}
+		}
+		console.log("slideBaseScene:", slideBaseScene, " Camera:", baseCamera, " Slide Scene is:", slideScene)
+
+		if (slideScene == '') {
+			console.log("No slide scene match")
+			StreamDeck.sendAlert(this.context)
+			return
+		}
+
+		StreamDeck.sendOk(this.context)
+
+		if (slideScene != OBS.preview.sceneName) {
+
+			console.log("Setting Scene to: ", slideScene)
+			this.pi_payload.currentScene = slideScene
+			this.pi_payload.slideBaseScene = slideBaseScene
+			OBS.preview.next.button = this.context
+			OBS.preview.next.type = this.type
+			// this._setState(keySlidePreview)
+			obs.send('SetPreviewScene', {
+				'scene-name': slideScene
+			})
+		} else {
+			console.log("Scene already set no changing")
+		}
+	}
+
+	_NewSlideBaseScene() {
+		// New Preview test when slide scene is active.
+
+		console.log("_NewSlideBaseScene", this)
+
+
+		// Test to see if our scene is valid for slide scene.
+		// I.e. does it contain the Grouping scene in the current slide active.
+		if (!obsIsSlideGroupScene(this.pi_payload.currentScene)) {
+			this._Preview()
+			return
+		}
+		StreamDeck.sendOk(this.context)
+
+		// TODO - Need to actually setup preview for this - align it up and ready for preview.
+
+		// TODO - partially working now.
+		// 1. Need to make sure next p;review if valid is also yellow.
+		// 2. More secure disarming of slides - a bit random here.
+
+		// this.setPreviewScene()
+		// this._setState(keyNewSlideBaseScene)
+		// TBD - 2nd time round this is failing to set state ........ - FIX FIX FIX
+		handleNewSlideBaseScene(this)   // TODO - so maybe this isn't needed
+
+	}
+
+
+	_ClearSlidesAndLive() {
+		console.log("_ClearSlidesAndLive: this", this)
+		disarmSlides(true)
+		this._LiveOutput()  // Need to flag because our sense isn't the actual correct one.
 	}
 
 	_LiveOutput() {
+		console.log("_LiveOutput: this", this)
 		StreamDeck.sendOk(this.context)
-		if (this.liveactive_preset && !this.liveactive) {
-			console.log("Live Output Scene switch: ", this.scene)
-			obs.send('SetCurrentScene', {
-				'scene-name': this.scene
-			})
-			console.log("Checking button state", this)
-		} else {
-			console.log("Starting Scene transition to program")
-			obs.send('TransitionToProgram')
-		}
-		this.liveactive = true // Indicates last live one pressed.
-		this.liveactive_preset = true
+		console.log("Starting Scene transition to program")
+		OBS.program.next.button = this.context
+		OBS.program.next.type = this.type
+		// Doing explicit set Current scene here is safer than transitionToProgram
+		// as it allows for properly resettings the slides.
+		obs.send('SetCurrentScene', {
+			'scene-name': this.pi_payload.currentScene
+		})
+
 		console.log("Checking button state", this)
-		clearPrimeButtons()
+		this._setState(keySourceLive)
+	}
+
+	_LiveOutputSlide() {
+		StreamDeck.sendOk(this.context)
+
+		console.log("Starting Scene transition to program")
+		OBS.program.next.button = this.context
+		OBS.program.next.type = this.type
+		obs.send('SetCurrentScene', {
+			'scene-name': this.pi_payload.currentScene
+		})
+
 		console.log("Checking button state", this)
-		setLiveActivePresets(this.preset, this.ipaddress, this.source, this.context)
 		this._setState(keySourceLive)
 	}
 
@@ -133,93 +260,109 @@ class Button {
 
 	setPreview() {
 		// Add detection here for primed/no primed
-		if (this.type == 'scene' ) {
-			console.log("setPreview", this)
-			if (this.primed) {
-				this._setState(keyPreviewPrimed)
-			} else {
-				this._setState(keyPreviewNotPrimed)
-			}
-			this.liveactive = false
-			this.setOnline()
+		console.log("setPreview", this)
+		switch (this.type) {
+			case 'scene':
+				this._setState(keyPreview)
+				break
+			case 'slide':
+				this._setState(keySlidePreview)
+				break;
 		}
+		OBS.preview.current.type = this.type
+		OBS.preview.current.button = this.context
+		this.setOnline()
 	}
 
 	setProgram() {
-		if (this.type == 'scene' ) {
+		if (this.type != '') {
 			console.log("setProgram", this)
 			this._setState(keyLiveOutput)
+			OBS.program.current.type = this.type
+			OBS.program.current.button = this.context
 			this.setOnline()
 		}
 	}
 
 	setSourcePreview() {
-		if (this.type == 'scene') {
+		if (this.type != '') {
 			console.log("setSourcePreview", this)
 			this._setState(keySourcePreview)
 			this.state = keySourcePreview
+			// TODO - Button detection.
+			if (OBS.preview.type == 'scene') {
+
+			}
 			this.setOnline()
 		}
 	}
 
 	setSourceProgram() {
-		if (this.type == 'scene') {
-			console.log("setSourceProgram", this)
-			this._setState(keySourceLive)
-			this.setOnline()
+		console.log("setSourceProgram", this)
+		switch (this.type) {
+			case 'scene':
+				this._setState(keySourceLive)
+				break
+			case 'slide':
+				this._setState(keySlidePreview)
+				break;
 		}
+		this.setOnline()
+	}
+
+	setNewSlideBaseScene() {
+		console.log("setNewSlideBaseScene", this)
+		this._setState(keyNewSlideBaseScene)
+		this.setOnline()
 	}
 
 	setOffAir() {
-		if (this.type == 'scene') {
+		if (this.type != '') {
 			console.log("Setting OFF AIR", this)
 			this._setState(keyInactive)
-			this.primed = false
-			this.send_primed = false
-			this.liveactive = false
-			this.liveactive_preset = false
 			this.setOffline()
 		}
 	}
 
-	setLiveActivePreset(live_preset, live_ipaddress, live_source, live_context) {
-		// Conditions
-		// Source match
-		// Presets match
-		// Address match
-		if (this.preset == live_preset && this.ipaddress == live_ipaddress && this.source == live_source) {
-			this.liveactive_preset = true
-			this.liveactive = (live_context == this.context ? true : false)
-			console.log("livepreset - coords", this.coordinates.column, this.coordinates.row, "MATCH", "live_context", live_context, "button", this)
-		} else {
-			console.log("livepreset - coords", this.coordinates.column, this.coordinates.row, "no match ", this)
-			this.liveactive_preset = false
-		}
-
-	}
-
 	_setState(newstate) {
+		console.log("Setting state to ", newstate)
 		StreamDeck.setState(this.context, newstate)
 		this.state = newstate
 	}
 
 	setOnline() {
-		console.log("setOnline Scene:", this.scene, "coords", this.coordinates.column, this.coordinates.row, "type", this.type, "source", this.source, "state", this.state, this)
+		console.log("setOnline Scene:", this.pi_payload.currentScene, "coords", this.coordinates.column, this.coordinates.row, "type", this.type, "source", this.pi_payload.currentSource, "state", this.state, this)
 
+		// TODO - remove duplicates....
 		switch (this.type) {
 			case 'scene':
 				var canvas = document.getElementById('canvas')
 				var ctx = canvas.getContext('2d')
 
 				ctx.clearRect(0, 0, max_rect_width, max_rect_width);
-				if (this.buttonimagecontents) {
-					this._loadButtonImage(ctx, this.buttonimagecontents).then((values) => {
+				if (this.pi_payload.currentButtonImageContents) {
+					this._loadButtonImage(ctx, this.pi_payload.currentButtonImageContents).then((values) => {
 						this._ActiveButtonBoxes(ctx, canvas)
 					})
 				} else {
 					this._ActiveButtonBoxes(ctx, canvas)
 				}
 				break
+
+			case 'slide':
+				var canvas = document.getElementById('canvas')
+				var ctx = canvas.getContext('2d')
+
+				ctx.clearRect(0, 0, max_rect_width, max_rect_width);
+				if (this.pi_payload.currentButtonImageContents) {
+					this._loadButtonImage(ctx, this.pi_payload.currentButtonImageContents).then((values) => {
+						this._ActiveButtonBoxes(ctx, canvas)
+					})
+				} else {
+					this._ActiveButtonBoxes(ctx, canvas)
+				}
+				break
+
 			default:
 				console.log("Setting blackimage for main", this)
 				this.setOffline()
@@ -235,39 +378,40 @@ class Button {
 		switch (this.state) {
 			case keyInactive:
 				break
-			case keyPreviewPrimed:
+			case keyPreview:
 				main_box = green
 				circle_col = green
-				break
-			case keyPreviewNotPrimed:
-				main_box = green
 				break
 			case keySourcePreview:
 				lower_bar = green
 				break
 			case keySourceLive:
-				lower_bar = red
-				if (this.liveactive_preset) {
+				if (this.pi_payload.currentScene == OBS.program.slideBaseScene) {
 					circle_col = yellow
 				}
+				lower_bar = red
 				break
 			case keyLiveOutput:
+				circle_col = red
 				main_box = red
-				if (this.liveactive) {
-					circle_col = red
-				} else if (this.liveactive_preset) {
-					circle_col = yellow
-				}
+				break
+			case keySlidePreview:
+				lower_bar = red
+				circle_col = yellow
+				break;
+			case keyNewSlideBaseScene:
+				main_box = green
+				circle_col = yellow
 				break
 		}
-		console.log("***** SetOnline Scene:", this.scene, 
-					"coords", this.coordinates.column, this.coordinates.row, 
-					"source", this.source, 
-					"state", this.state, 
-					"image", this.buttonimage,
-					"main:", main_box, 
-					"lower", lower_bar, 
-					"Circle:", circle_col)
+		console.log("***** SetOnline Scene:", this.pi_payload.currentScene,
+			"coords", this.coordinates.column, this.coordinates.row,
+			"source", this.pi_payload.currentSource,
+			"state", this.state,
+			"image", this.pi_payload.currentButtonImage,
+			"main:", main_box,
+			"lower", lower_bar,
+			"Circle:", circle_col)
 
 		ctx.beginPath()
 		if (circle_col != "") {
@@ -288,9 +432,9 @@ class Button {
 		if (lower_bar != "") {
 			ctx.beginPath();
 			ctx.strokeStyle = lower_bar
-			ctx.lineWidth = rectangle_line_width*2;
+			ctx.lineWidth = rectangle_line_width * 2;
 			ctx.moveTo(0, src_rectangle_y)
-			ctx.lineTo(rectangle_width+rectangle_line_width, src_rectangle_y)
+			ctx.lineTo(rectangle_width + rectangle_line_width, src_rectangle_y)
 			ctx.stroke()
 		}
 		// console.log("Canvas output", canvas.toDataURL())
@@ -298,19 +442,19 @@ class Button {
 	}
 
 	setOffline() {
-		console.log("Setting Off Line Scene:", this.scene, "coords", this.coordinates.column, this.coordinates.row, "source", this.source, "state", this.state, this)
+		console.log("Setting Off Line Scene:", this.pi_payload.currentScene, "coords", this.coordinates.column, this.coordinates.row, "source", this.pi_payload.currentSource, "state", this.state, this)
 		var canvas = document.getElementById('canvas')
 		var ctx = canvas.getContext('2d')
 		ctx.clearRect(0, 0, max_rect_width, max_rect_width);
-		if (this.buttonimagecontents) {
-			this._loadButtonImage(ctx, this.buttonimagecontents).then((values) => {
+		if (this.pi_payload.currentButtonImageContents) {
+			this._loadButtonImage(ctx, this.pi_payload.currentButtonImageContents).then((values) => {
 				// console.log("Canvas output", canvas.toDataURL())
 				StreamDeck.setImage(this.context, canvas.toDataURL(), StreamDeck.BOTH)
 			})
 		} else {
 			StreamDeck.setImage(this.context, canvas.toDataURL(), StreamDeck.BOTH)
 		}
-	
+
 	}
 
 	_loadButtonImage(ctx, imagecontents) {
@@ -318,26 +462,11 @@ class Button {
 		return new Promise((resolve, reject) => { // eslint-disable-line no-unused-vars
 			console.log("Loading Button image and drawing it.")
 			var btnimg = new Image();
-			btnimg.onload = function() {
-				ctx.drawImage(btnimg,0,0)
+			btnimg.onload = function () {
+				ctx.drawImage(btnimg, 0, 0)
 				resolve("Image Loaded")
 			}
 			btnimg.src = imagecontents
 		});
-	}
-
-	_setCameraPreset() {
-		
-		if (this.ipaddress != "" && this.present != "") {
-			// http://[Camera IP]/cgi-bin/ptzctrl.cgi?ptzcmd&poscall&[Position Number]
-			console.log('Setting Camera Preset:', this.ipaddress, this.preset)
-
-			let camera_ptz_cmd = "http://" + this.ipaddress + "/cgi-bin/ptzctrl.cgi?ptzcmd&poscall&" + this.preset
-			console.log("Camera PTZ Command:", camera_ptz_cmd)
-
-			let Http = new XMLHttpRequest();
-			Http.open("GET", camera_ptz_cmd);
-			Http.send();
-		}
 	}
 }
